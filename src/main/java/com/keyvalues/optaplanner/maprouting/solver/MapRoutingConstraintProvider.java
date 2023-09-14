@@ -14,17 +14,14 @@ import org.optaplanner.core.api.solver.SolverFactory;
 import com.keyvalues.optaplanner.geo.Point;
 import com.keyvalues.optaplanner.maprouting.domain.MapRoutingSolution;
 import com.keyvalues.optaplanner.maprouting.domain.RoutingEntity;
-import com.keyvalues.optaplanner.maprouting.utils.RoutingUtil;
 
 
 public class MapRoutingConstraintProvider implements ConstraintProvider{
 
-    static Point point=new Point(0, 0);
-
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[]{
-            visitConstraint(constraintFactory),
+            // visitConstraint(constraintFactory),
             orderConstraint(constraintFactory),
             calculateTotalDistanceConstraint(constraintFactory),
             // testConstraint(constraintFactory)
@@ -38,15 +35,15 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
     //         .asConstraint("Test Constraint");
     // }
 
-    /**
-     * 所有点必须全部访问且不重复
-     */
-    private Constraint visitConstraint(ConstraintFactory factory) {
-        return factory.forEach(RoutingEntity.class)
-            .join(RoutingEntity.class,Joiners.lessThan(RoutingEntity::getId),Joiners.equal(RoutingEntity::getVisitPoint))
-            .penalize(HardSoftScore.ONE_HARD)
-            .asConstraint("Visit All");
-    }
+    // /**
+    //  * 所有点必须全部访问且不重复
+    //  */
+    // private Constraint visitConstraint(ConstraintFactory factory) {
+    //     return factory.forEach(RoutingEntity.class)
+    //         .join(RoutingEntity.class,Joiners.lessThan(RoutingEntity::getId),Joiners.equal(RoutingEntity::getVisitPoint))
+    //         .penalize(HardSoftScore.ONE_HARD)
+    //         .asConstraint("Visit All");
+    // }
 
     /**
      * 顺序不重复约束
@@ -58,9 +55,6 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
             .asConstraint("Order Range");
     }
 
-    // 或 C->A->B 违反了硬约束
-    // 或 C->A->B 算路径多算了 （已排除）
-
     /**
      * 总路程最短软约束
      */
@@ -68,7 +62,7 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
         return factory.forEach(RoutingEntity.class)
             .join(RoutingEntity.class)
             .filter((r1, r2) -> r1.getOrder() + 1 == r2.getOrder())
-            .penalize(HardSoftScore.ONE_SOFT,(r1,r2)->RoutingUtil.calculateDistance(r1, r2))
+            .penalize(HardSoftScore.ONE_SOFT,(r1,r2)->RoutingEntity.getApiDistance(r1, r2))
             .asConstraint("MIN DISTANCE");
     }
 

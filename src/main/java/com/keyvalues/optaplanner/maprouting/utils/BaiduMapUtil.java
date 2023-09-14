@@ -103,10 +103,10 @@ public class BaiduMapUtil {
         log.info(url);
         String realKey = Md5Util.md5Encode(url, "utf-8");
         if (cacheable) {
-            // Object cacheData = redisUtil.get(realKey);
-            // if (cacheData != null) {
-            //     return (JSONObject) cacheData;
-            // }
+            Object cacheData = redisUtil.get(realKey);
+            if (cacheData != null) {
+                return (JSONObject) cacheData;
+            }
         }
         try {
             HttpClientBuilder builder = HttpClients.custom();
@@ -133,7 +133,7 @@ public class BaiduMapUtil {
             EntityUtils.consume(entity);
             JSONObject response = JSONObject.parseObject(result);
             if (response.getIntValue("status") == 0) {
-                // redisUtil.set(realKey, response, 24 * 3600);
+                redisUtil.set(realKey, response, 24 * 3600);
                 return response;
             } else {
                 throw new Exception(response.getString("message"));

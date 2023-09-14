@@ -19,11 +19,13 @@ import lombok.ToString;
 @ToString
 public class MapRoutingSolution {
 
+    private String id;
+
     /**
      * 地图标出的点
      */
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider(id = "pointRange")
+    // @ProblemFactCollectionProperty
+    // @ValueRangeProvider(id = "pointRange")
     private List<Point> pointList;
 
     @ProblemFactCollectionProperty

@@ -14,18 +14,23 @@
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
+  <!-- <termination>
+    <secondsSpentLimit>3</secondsSpentLimit>
+  </termination> -->
+
   <constructionHeuristic>
       <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
   </constructionHeuristic>
 
-  <!-- 配置搜索算法 -->
+  <!-- 配置为本地搜索算法 -->
   <localSearch>
       <termination>
-          <unimprovedSecondsSpentLimit>30</unimprovedSecondsSpentLimit>
+          <unimprovedSecondsSpentLimit>5</unimprovedSecondsSpentLimit>
       </termination>
-      <moveListFactory>
-           <moveListFactoryClass>com.keyvalues.optaplanner.maprouting.optional.PermutationMoveFactory</moveListFactoryClass>
-      </moveListFactory>
+      <!-- 交换枚举，相比较贪婪启发更暴力 -->
+      <!-- <moveListFactory>
+           <moveListFactoryClass>com.keyvalues.optaplanner.maprouting.solver.move.PermutationMoveFactory</moveListFactoryClass>
+      </moveListFactory> -->
   </localSearch>
 
 </solver>

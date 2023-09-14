@@ -1,4 +1,4 @@
-package com.keyvalues.optaplanner.maprouting.optional;
+package com.keyvalues.optaplanner.maprouting.solver.move;
 
 import java.util.ArrayList;
 import java.util.List;

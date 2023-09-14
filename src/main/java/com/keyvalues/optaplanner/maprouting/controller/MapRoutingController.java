@@ -1,5 +1,8 @@
 package com.keyvalues.optaplanner.maprouting.controller;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +22,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/maprouting")
 public class MapRoutingController {
+
+    /**
+     * 暂时这么用，后面统一管理
+     * 点距离关系 缓存redis可
+     */
+    public static final Map<String,Integer> p2pDistanceMap=new ConcurrentHashMap<>();
 
     @Autowired
     private SolverService solverService;
