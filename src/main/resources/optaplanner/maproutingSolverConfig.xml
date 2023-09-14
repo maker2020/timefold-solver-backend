@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://www.optaplanner.org/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://www.optaplanner.org/xsd/solver https://www.optaplanner.org/xsd/solver/solver.xsd">
+  <!-- To slowly prove there are no bugs in this code -->
+  <!--<environmentMode>FULL_ASSERT</environmentMode>-->
+  <!-- To solve faster by saturating multiple CPU cores -->
+  <!--<moveThreadCount>AUTO</moveThreadCount>-->
+
+  <solutionClass>com.keyvalues.optaplanner.maprouting.domain.MapRoutingSolution</solutionClass>
+  <entityClass>com.keyvalues.optaplanner.maprouting.domain.RoutingEntity</entityClass>
+
+  <scoreDirectorFactory>
+    <constraintProviderClass>com.keyvalues.optaplanner.maprouting.solver.MapRoutingConstraintProvider</constraintProviderClass>
+    <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+  </scoreDirectorFactory>
+
+  <constructionHeuristic>
+      <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+  </constructionHeuristic>
+
+  <!-- 配置搜索算法 -->
+  <localSearch>
+      <termination>
+          <unimprovedSecondsSpentLimit>30</unimprovedSecondsSpentLimit>
+      </termination>
+      <moveListFactory>
+           <moveListFactoryClass>com.keyvalues.optaplanner.maprouting.optional.PermutationMoveFactory</moveListFactoryClass>
+      </moveListFactory>
+  </localSearch>
+
+</solver>
