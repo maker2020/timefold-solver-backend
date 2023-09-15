@@ -12,6 +12,7 @@ import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.SolverJob;
 import org.optaplanner.core.api.solver.SolverManager;
+import org.optaplanner.core.api.solver.SolverStatus;
 import org.optaplanner.core.config.solver.SolverConfig;
 import org.optaplanner.core.config.solver.SolverManagerConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
@@ -83,7 +84,7 @@ public class SolverServiceImpl implements SolverService{
         data.put("problemID", probleamID.toString());
         // debug用的线程
         new Thread(()->{
-            for(int i=0;i<10;i++){
+            while(!solverJob.getSolverStatus().equals(SolverStatus.NOT_SOLVING)){
                 log.info("--------------实时更新状态-----------："+solverJob.getSolverStatus());
                 try {
                     Thread.sleep(1000);
