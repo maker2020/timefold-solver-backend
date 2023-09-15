@@ -2,3 +2,5 @@
 /config
 **/.vscode
 /target/
+
+.DS_Store

@@ -40,7 +40,7 @@ public class SolverServiceImpl implements SolverService{
     private final SolverConfig solverConfig;
     private final BaiduDirection baiduDirection;
 
-    private Map<UUID,SolverJob<MapRoutingSolution,Object>> solverJobMap=new ConcurrentHashMap<>();
+    private Map<UUID,Map<String,Object>> solutionUpdateMap=new ConcurrentHashMap<>();
 
     public SolverServiceImpl(SolverManager<MapRoutingSolution, Long> solverManager, SolverFactory<MapRoutingSolution> solverFactory,SolverConfig solverConfig,BaiduDirection baiduDirection) {
         this.solverManager = solverManager;
@@ -75,26 +75,32 @@ public class SolverServiceImpl implements SolverService{
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(pointInputVo.getTimeLimit()));
         SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
         SolverManager<MapRoutingSolution,Object> solverManager = SolverManager.create(factory, new SolverManagerConfig());
-        UUID probleamID = UUID.randomUUID();
-        SolverJob<MapRoutingSolution,Object> solverJob = solverManager.solve(probleamID, solution);
-        log.info("======================STATUS:"+solverJob.getSolverStatus());
-        log.info("======================Duration:"+solverJob.getSolvingDuration());
-        solverJobMap.put(probleamID, solverJob);
+        UUID problemID = UUID.randomUUID();
+        
+        Map<String,Object> problemData=new HashMap<>();
+        SolverJob<MapRoutingSolution,Object> solverJob = solverManager.solveAndListen(problemID, (r)->{return solution;},(update)->{
+            problemData.put("updatedSolution", update);
+            solutionUpdateMap.put(problemID, problemData);
+        });
+        problemData.put("updatedSolution", solution);
+        problemData.put("solverJob", solverJob);
         Map<String,Object> data=new HashMap<>();
-        data.put("problemID", probleamID.toString());
-        // debug用的线程
-        new Thread(()->{
-            while(!solverJob.getSolverStatus().equals(SolverStatus.NOT_SOLVING)){
-                log.info("--------------实时更新状态-----------："+solverJob.getSolverStatus());
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    log.error(e.getMessage());
-                    break;
-                }
-            }
-        }).start();
+        data.put("problemID", problemID.toString());
         return Result.OK("请求成功! 正在后台处理...", data);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String,Object> pollUpdate(UUID problemID) throws Exception {
+        Map<String,Object> updateData=new HashMap<>();
+        Map<String,Object> problemUpdate = solutionUpdateMap.get(problemID);
+        if(problemUpdate==null) return null;
+        MapRoutingSolution solution = (MapRoutingSolution)problemUpdate.get("updatedSolution");
+        SolverJob<MapRoutingSolution,Object> solverJob=(SolverJob<MapRoutingSolution,Object>)problemUpdate.get("solverJob");
+        List<RoutingEntity> routing = solution.getRouting();
+        updateData.put("routing", routing);
+        updateData.put("status", solverJob.getSolverStatus());
+        return updateData;
     }
 
     /**
@@ -165,17 +171,6 @@ public class SolverServiceImpl implements SolverService{
             p2pDistanceMap.put(b.toString()+"->"+a.toString(), distance1);
         }
         return p2pDistanceMap;
-    }
-
-    @Override
-    public Map<String,Object> pollUpdate(UUID problemID) throws Exception {
-        Map<String,Object> updateData=new HashMap<>();
-        SolverJob<MapRoutingSolution,Object> solverJob = solverJobMap.get(problemID);
-        MapRoutingSolution finalBestSolution = solverJob.getFinalBestSolution();
-        List<RoutingEntity> routing = finalBestSolution.getRouting();
-        updateData.put("routing", routing);
-        updateData.put("status", solverJob.getSolverStatus());
-        return updateData;
     }
     
 }
