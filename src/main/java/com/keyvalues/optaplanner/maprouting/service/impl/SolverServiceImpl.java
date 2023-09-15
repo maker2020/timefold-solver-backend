@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
+import org.optaplanner.core.api.solver.SolverJob;
 import org.optaplanner.core.api.solver.SolverManager;
 import org.optaplanner.core.config.solver.SolverConfig;
+import org.optaplanner.core.config.solver.SolverManagerConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +39,8 @@ public class SolverServiceImpl implements SolverService{
     private final SolverConfig solverConfig;
     private final BaiduDirection baiduDirection;
 
+    private Map<UUID,SolverJob<MapRoutingSolution,Object>> solverJobMap=new ConcurrentHashMap<>();
+
     public SolverServiceImpl(SolverManager<MapRoutingSolution, Long> solverManager, SolverFactory<MapRoutingSolution> solverFactory,SolverConfig solverConfig,BaiduDirection baiduDirection) {
         this.solverManager = solverManager;
         this.solverFactory = solverFactory;
@@ -46,6 +52,54 @@ public class SolverServiceImpl implements SolverService{
     public MapRoutingSolution mapRoutingSolve(PointInputVo pointInputVo) {
         List<Point> points = pointInputVo.getPoints();
         // 构造问题丢给求解器求解。
+        MapRoutingSolution solution = generateSolution(points);
+        
+        // 不共享、用户定义部分配置
+        solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(pointInputVo.getTimeLimit()));
+        SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
+        Solver<MapRoutingSolution> solver = factory.buildSolver();
+        MapRoutingSolution result = solver.solve(solution);
+        return result;
+    }
+
+    @Override
+    public Result<?> mapRoutingSolveAsync(PointInputVo pointInputVo) {
+        List<Point> points = pointInputVo.getPoints();
+        MapRoutingSolution solution = generateSolution(points);
+        log.info("problem已构建,正在初始化辅助数据...");
+        List<List<Point>> p2pList = combinePoint(points, 2);
+        Map<String,Integer> distanceMap = createDistanceMap(p2pList);
+        MapRoutingController.p2pDistanceMap.putAll(distanceMap);
+        
+        solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(pointInputVo.getTimeLimit()));
+        SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
+        SolverManager<MapRoutingSolution,Object> solverManager = SolverManager.create(factory, new SolverManagerConfig());
+        UUID probleamID = UUID.randomUUID();
+        SolverJob<MapRoutingSolution,Object> solverJob = solverManager.solve(probleamID, solution);
+        log.info("======================STATUS:"+solverJob.getSolverStatus());
+        log.info("======================Duration:"+solverJob.getSolvingDuration());
+        solverJobMap.put(probleamID, solverJob);
+        Map<String,Object> data=new HashMap<>();
+        data.put("problemID", probleamID.toString());
+        // debug用的线程
+        new Thread(()->{
+            for(int i=0;i<10;i++){
+                log.info("--------------实时更新状态-----------："+solverJob.getSolverStatus());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        return Result.OK("请求成功! 正在后台处理...", data);
+    }
+
+    /**
+     * 构建问题
+     * @return
+     */
+    private MapRoutingSolution generateSolution(List<Point> points){
         MapRoutingSolution solution=new MapRoutingSolution();
         solution.setPointList(points);
         List<Integer> orderRange=new ArrayList<>();
@@ -59,18 +113,7 @@ public class SolverServiceImpl implements SolverService{
             routing.add(new RoutingEntity(id++,points.get(i)));
         }
         solution.setRouting(routing);
-
-        log.info("problem已构建,正在初始化辅助数据...");
-        List<List<Point>> p2pList = combinePoint(points, 2);
-        Map<String,Integer> distanceMap = createDistanceMap(p2pList);
-        MapRoutingController.p2pDistanceMap.putAll(distanceMap);
-        
-        // 不共享、用户定义部分配置
-        solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(pointInputVo.getTimeLimit()));
-        SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
-        Solver<MapRoutingSolution> solver = factory.buildSolver();
-        MapRoutingSolution result = solver.solve(solution);
-        return result;
+        return solution;
     }
 
     private List<List<Point>> combinePoint(List<Point> points,int choose) {
@@ -120,6 +163,17 @@ public class SolverServiceImpl implements SolverService{
             p2pDistanceMap.put(b.toString()+"->"+a.toString(), distance1);
         }
         return p2pDistanceMap;
+    }
+
+    @Override
+    public Map<String,Object> pollUpdate(UUID problemID) throws Exception {
+        Map<String,Object> updateData=new HashMap<>();
+        SolverJob<MapRoutingSolution,Object> solverJob = solverJobMap.get(problemID);
+        MapRoutingSolution finalBestSolution = solverJob.getFinalBestSolution();
+        List<RoutingEntity> routing = finalBestSolution.getRouting();
+        updateData.put("routing", routing);
+        updateData.put("status", solverJob.getSolverStatus());
+        return updateData;
     }
     
 }
