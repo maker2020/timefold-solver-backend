@@ -1,13 +1,18 @@
 package com.keyvalues.optaplanner.maprouting.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
 
+import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
+import org.optaplanner.core.api.solver.SolutionManager;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.SolverJob;
@@ -35,15 +40,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SolverServiceImpl implements SolverService{
 
-    private final SolverManager<MapRoutingSolution, Long> solverManager;
+    private Map<UUID,SolverManager<MapRoutingSolution, UUID>> solverManagerMap;
     private final SolverFactory<MapRoutingSolution> solverFactory;
     private final SolverConfig solverConfig;
     private final BaiduDirection baiduDirection;
 
-    private Map<UUID,Map<String,Object>> solutionUpdateMap=new ConcurrentHashMap<>();
+    // 这种不能可靠的让浏览器拿到每个情况（取决于时间交点和轮询间隔时差）
+    // private Map<UUID,Map<String,Object>> solutionUpdateMap=new ConcurrentHashMap<>();
+    // 用等待队列实现
+    private Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueen=new ConcurrentHashMap<>();  
 
-    public SolverServiceImpl(SolverManager<MapRoutingSolution, Long> solverManager, SolverFactory<MapRoutingSolution> solverFactory,SolverConfig solverConfig,BaiduDirection baiduDirection) {
-        this.solverManager = solverManager;
+    public SolverServiceImpl(SolverManager<MapRoutingSolution, UUID> solverManager, SolverFactory<MapRoutingSolution> solverFactory,SolverConfig solverConfig,BaiduDirection baiduDirection) {
+        // 自定义配置，所以不用默认的对象
+        // this.solverManager = solverManager;
+
+        // 如果多用户操作同一个求解过程，则需要修改
+        solverManagerMap=new HashMap<>();
         this.solverFactory = solverFactory;
         this.solverConfig = solverConfig;
         this.baiduDirection = baiduDirection;
@@ -74,32 +86,52 @@ public class SolverServiceImpl implements SolverService{
         
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(pointInputVo.getTimeLimit()));
         SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
-        SolverManager<MapRoutingSolution,Object> solverManager = SolverManager.create(factory, new SolverManagerConfig());
+        SolverManager<MapRoutingSolution,UUID> solverManager = SolverManager.create(factory, new SolverManagerConfig());
         UUID problemID = UUID.randomUUID();
-        
-        Map<String,Object> problemData=new HashMap<>();
-        SolverJob<MapRoutingSolution,Object> solverJob = solverManager.solveAndListen(problemID, (r)->{return solution;},(update)->{
-            problemData.put("updatedSolution", update);
-            solutionUpdateMap.put(problemID, problemData);
+        solverManagerMap.put(problemID, solverManager);
+
+        // 初始化同步数据的队列
+        ConcurrentLinkedDeque<Map<String,Object>> syncQueue = new ConcurrentLinkedDeque<Map<String,Object>>();
+        solverSolutionQueen.put(problemID, syncQueue);
+        SolverJob<MapRoutingSolution,UUID> solverJob = solverManager.solveAndListen(problemID, (r)->{return solution;},(update)->{
+            // 备注：并非同一个对象的引用，不需要深克隆.
+            Map<String,Object> newData=new HashMap<>();
+            newData.put("status", solverManager.getSolverStatus(problemID));
+            newData.put("updatedSolution", update);
+            syncQueue.add(newData);
         });
-        problemData.put("updatedSolution", solution);
-        problemData.put("solverJob", solverJob);
         Map<String,Object> data=new HashMap<>();
         data.put("problemID", problemID.toString());
         return Result.OK("请求成功! 正在后台处理...", data);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Map<String,Object> pollUpdate(UUID problemID) throws Exception {
         Map<String,Object> updateData=new HashMap<>();
-        Map<String,Object> problemUpdate = solutionUpdateMap.get(problemID);
-        if(problemUpdate==null) return null;
+        ConcurrentLinkedDeque<Map<String,Object>> updateQueue=solverSolutionQueen.get(problemID);
+        // 问题不存在
+        if(updateQueue==null) return null;
+        Map<String,Object> problemUpdate=updateQueue.poll();
+        SolverManager<MapRoutingSolution,UUID> solverManager = solverManagerMap.get(problemID);
+        if(problemUpdate==null && solverManager.getSolverStatus(problemID).equals(SolverStatus.NOT_SOLVING)){
+            updateData.put("status", SolverStatus.NOT_SOLVING);
+
+            // 清空该问题资源
+            solverSolutionQueen.remove(problemID);
+            solverManagerMap.remove(problemID);
+            return updateData;
+        }
+        // 有status=ACTIVATE，但已没有最新更新数据时，problemUpdate==null
+        if(problemUpdate==null && solverManager.getSolverStatus(problemID).equals(SolverStatus.SOLVING_ACTIVE)){
+            updateData.put("status", SolverStatus.SOLVING_ACTIVE);
+            return updateData;
+        }
         MapRoutingSolution solution = (MapRoutingSolution)problemUpdate.get("updatedSolution");
-        SolverJob<MapRoutingSolution,Object> solverJob=(SolverJob<MapRoutingSolution,Object>)problemUpdate.get("solverJob");
+        SolverStatus status = (SolverStatus)problemUpdate.get("status");
         List<RoutingEntity> routing = solution.getRouting();
+        // 跟某个阶段的解 所绑定的状态为status常量字段
         updateData.put("routing", routing);
-        updateData.put("status", solverJob.getSolverStatus());
+        updateData.put("status", status);
         return updateData;
     }
 

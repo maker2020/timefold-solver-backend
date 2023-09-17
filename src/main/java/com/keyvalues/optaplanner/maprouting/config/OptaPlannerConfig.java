@@ -1,5 +1,7 @@
 package com.keyvalues.optaplanner.maprouting.config;
 
+import java.util.UUID;
+
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.SolverManager;
 import org.optaplanner.core.config.solver.SolverConfig;
@@ -24,7 +26,7 @@ public class OptaPlannerConfig {
     }
 
     @Bean
-    SolverManager<MapRoutingSolution, Long> solverManager() {
+    SolverManager<MapRoutingSolution, UUID> solverManager() {
         return SolverManager.create(solverFactory(), new SolverManagerConfig());
     }
 
