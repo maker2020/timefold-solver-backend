@@ -92,4 +92,11 @@ public class MapRoutingController {
         return Result.OK();
     }
 
+    @GetMapping("/terminalProblem")
+    @Operation(summary = "终止问题并拿当前结果")
+    public Result<?> terminalProblem(@RequestParam String problemID){
+        MapRoutingSolution solution = solverService.terminalProblem(UUID.fromString(problemID));
+        return Result.OK(solution);
+    }
+
 }
