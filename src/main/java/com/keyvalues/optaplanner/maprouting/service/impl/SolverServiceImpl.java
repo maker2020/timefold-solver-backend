@@ -145,20 +145,25 @@ public class SolverServiceImpl implements SolverService{
             SolverJob<MapRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
             Map<String,Object> problemData=new HashMap<>();
             SolverStatus solverStatus = solverJob.getSolverStatus();
-            problemData.put("bestRouting", null);
-            if(SolverStatus.NOT_SOLVING.equals(solverStatus)){ // 求解已完成
-                MapRoutingSolution finalBestSolution;
-                try {
-                    // 阻塞方法，所以要判断求解完成再来拿，否则为null
-                    finalBestSolution = solverJob.getFinalBestSolution();
-                } catch (Exception e) {
-                    log.info(e.getMessage());
-                    return null;
-                }
-                problemData.put("bestRouting", finalBestSolution.getRouting());
-            }
+            // problemData.put("bestRouting", null);
+            // if(SolverStatus.NOT_SOLVING.equals(solverStatus)){ // 求解已完成
+            //     MapRoutingSolution finalBestSolution;
+            //     try {
+            //         // 阻塞方法，所以要判断求解完成再来拿，否则为null
+            //         finalBestSolution = solverJob.getFinalBestSolution();
+            //     } catch (Exception e) {
+            //         log.info(e.getMessage());
+            //         return null;
+            //     }
+            //     problemData.put("bestRouting", finalBestSolution.getRouting());
+            // }
             problemData.put("status", solverStatus);   
             problemData.put("problemID", problemID);
+            // 展示solution信息：包含用户输入的条件、当前最新的一次优化结果
+            ConcurrentLinkedDeque<Map<String,Object>> solutionQueue = solverSolutionQueue.get(problemID);
+            Map<String,Object> lastSolution = solutionQueue.getLast();
+            MapRoutingSolution solution=(MapRoutingSolution)lastSolution.get("updatedSolution");
+            problemData.put("solution", solution);
         }
         return result;
     }
