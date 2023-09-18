@@ -24,6 +24,6 @@ public class PointInputVo {
     @Schema(description = "计算时间限制(s)")
     private Long timeLimit;
 
-    @Schema(description = "是否后台计算(默认true)")
-    private Boolean isBackground;
+    // @Schema(description = "是否后台计算(默认true)")
+    // private Boolean isBackground;
 }

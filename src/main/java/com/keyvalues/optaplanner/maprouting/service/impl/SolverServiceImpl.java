@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -40,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SolverServiceImpl implements SolverService{
 
-    private Map<UUID,SolverManager<MapRoutingSolution, UUID>> solverManagerMap;
+    private Map<UUID,SolverJob<MapRoutingSolution,UUID>> solverJobMap;
     private final SolverFactory<MapRoutingSolution> solverFactory;
     private final SolverConfig solverConfig;
     private final BaiduDirection baiduDirection;
@@ -48,14 +49,14 @@ public class SolverServiceImpl implements SolverService{
     // 这种不能可靠的让浏览器拿到每个情况（取决于时间交点和轮询间隔时差）
     // private Map<UUID,Map<String,Object>> solutionUpdateMap=new ConcurrentHashMap<>();
     // 用等待队列实现
-    private Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueen=new ConcurrentHashMap<>();  
+    private Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueue=new ConcurrentHashMap<>();  
 
     public SolverServiceImpl(SolverManager<MapRoutingSolution, UUID> solverManager, SolverFactory<MapRoutingSolution> solverFactory,SolverConfig solverConfig,BaiduDirection baiduDirection) {
         // 自定义配置，所以不用默认的对象
         // this.solverManager = solverManager;
 
-        // 如果多用户操作同一个求解过程，则需要修改
-        solverManagerMap=new HashMap<>();
+        // 
+        solverJobMap=new ConcurrentHashMap<>();
         this.solverFactory = solverFactory;
         this.solverConfig = solverConfig;
         this.baiduDirection = baiduDirection;
@@ -87,11 +88,10 @@ public class SolverServiceImpl implements SolverService{
         SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
         SolverManager<MapRoutingSolution,UUID> solverManager = SolverManager.create(factory, new SolverManagerConfig());
         UUID problemID = UUID.randomUUID();
-        solverManagerMap.put(problemID, solverManager);
 
         // 初始化同步数据的队列
         ConcurrentLinkedDeque<Map<String,Object>> syncQueue = new ConcurrentLinkedDeque<Map<String,Object>>();
-        solverSolutionQueen.put(problemID, syncQueue);
+        solverSolutionQueue.put(problemID, syncQueue);
         SolverJob<MapRoutingSolution,UUID> solverJob = solverManager.solveAndListen(problemID, (r)->{return solution;},(update)->{
             // 备注：并非同一个对象的引用，不需要深克隆.
             Map<String,Object> newData=new HashMap<>();
@@ -99,6 +99,9 @@ public class SolverServiceImpl implements SolverService{
             newData.put("updatedSolution", update);
             syncQueue.add(newData);
         });
+        // 可跟踪问题状态，以及最终解
+        solverJobMap.put(problemID, solverJob);
+        
         Map<String,Object> data=new HashMap<>();
         data.put("problemID", problemID.toString());
         return Result.OK("请求成功! 正在后台处理...", data);
@@ -107,21 +110,21 @@ public class SolverServiceImpl implements SolverService{
     @Override
     public Map<String,Object> pollUpdate(UUID problemID) throws Exception {
         Map<String,Object> updateData=new HashMap<>();
-        ConcurrentLinkedDeque<Map<String,Object>> updateQueue=solverSolutionQueen.get(problemID);
+        ConcurrentLinkedDeque<Map<String,Object>> updateQueue=solverSolutionQueue.get(problemID);
         // 问题不存在
         if(updateQueue==null) return null;
         Map<String,Object> problemUpdate=updateQueue.poll();
-        SolverManager<MapRoutingSolution,UUID> solverManager = solverManagerMap.get(problemID);
-        if(problemUpdate==null && solverManager.getSolverStatus(problemID).equals(SolverStatus.NOT_SOLVING)){
+        SolverJob<MapRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
+        if(problemUpdate==null && solverJob.getSolverStatus().equals(SolverStatus.NOT_SOLVING)){
             updateData.put("status", SolverStatus.NOT_SOLVING);
 
-            // 清空该问题资源
-            solverSolutionQueen.remove(problemID);
-            solverManagerMap.remove(problemID);
+            // 清空该问题对应的资源 (该更新接口已经被浏览器最后一次拿到结果，说明客户端已看到，可以释放)
+            solverSolutionQueue.remove(problemID);
+            solverJobMap.remove(problemID);
             return updateData;
         }
         // 有status=ACTIVATE，但已没有最新更新数据时，problemUpdate==null
-        if(problemUpdate==null && solverManager.getSolverStatus(problemID).equals(SolverStatus.SOLVING_ACTIVE)){
+        if(problemUpdate==null && solverJob.getSolverStatus().equals(SolverStatus.SOLVING_ACTIVE)){
             updateData.put("status", SolverStatus.SOLVING_ACTIVE);
             return updateData;
         }
@@ -132,6 +135,58 @@ public class SolverServiceImpl implements SolverService{
         updateData.put("routing", routing);
         updateData.put("status", status);
         return updateData;
+    }
+
+    @Override
+    public List<Map<String,Object>> listProblem() {
+        List<Map<String,Object>> result=new ArrayList<>();
+        Set<UUID> problemIDSet = solverJobMap.keySet();
+        for (UUID problemID : problemIDSet) {
+            SolverJob<MapRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
+            Map<String,Object> problemData=new HashMap<>();
+            SolverStatus solverStatus = solverJob.getSolverStatus();
+            problemData.put("bestRouting", null);
+            if(SolverStatus.NOT_SOLVING.equals(solverStatus)){ // 求解已完成
+                MapRoutingSolution finalBestSolution;
+                try {
+                    // 阻塞方法，所以要判断求解完成再来拿，否则为null
+                    finalBestSolution = solverJob.getFinalBestSolution();
+                } catch (Exception e) {
+                    log.info(e.getMessage());
+                    return null;
+                }
+                problemData.put("bestRouting", finalBestSolution.getRouting());
+            }
+            problemData.put("status", solverStatus);   
+            problemData.put("problemID", problemID);
+        }
+        return result;
+    }
+
+    @Override
+    public void removeProblem(UUID problemID) {
+        if(solverJobMap.containsKey(problemID)){
+            SolverJob<MapRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
+            solverJob.terminateEarly();            
+        }
+        solverJobMap.remove(problemID);
+        solverSolutionQueue.remove(problemID);
+    }
+
+    @Override
+    public MapRoutingSolution terminalProblem(UUID problemID) {
+        if(solverJobMap.containsKey(problemID)){
+            SolverJob<MapRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
+            // 阻塞到退出
+            solverJob.terminateEarly();            
+        }
+        ConcurrentLinkedDeque<Map<String,Object>> solutionDeque = solverSolutionQueue.get(problemID);
+        if(solutionDeque==null || solutionDeque.size()==0) return null;
+        Map<String,Object> lastSolution = solutionDeque.getLast();
+        MapRoutingSolution solution=(MapRoutingSolution)lastSolution.get("updatedSolution");
+        solverJobMap.remove(problemID);
+        solverSolutionQueue.remove(problemID);
+        return solution;
     }
 
     /**

@@ -55,7 +55,7 @@ public class MapRoutingController {
     }
 
     @PostMapping("/solveAsync")
-    @Operation(summary = "根据选点求解优化线路(异步求解，轮询获取最新计算结果)")
+    @Operation(summary = "根据选点求解优化线路(异步求解，轮询获取最新计算结果)",description = "异步求解（用户要想后台计算，必须等问题初始化结束再退出浏览器，因为初始化结束后才能拿到problemID）")
     public Result<?> solveAsync(@RequestBody PointInputVo pointInputVo){
         Result<?> result;
         try {
@@ -77,7 +77,19 @@ public class MapRoutingController {
             log.error(e.getMessage());
             return Result.failed("计算异常，无法获取最新数据");
         }
+    }
 
+    @GetMapping("/listProblem")
+    @Operation(summary = "获取求解问题列表")
+    public Result<?> listProblem(){
+        return Result.OK(solverService.listProblem());
+    }
+
+    @GetMapping("/removeProblem")
+    @Operation(summary = "终止及移除问题")
+    public Result<?> removeProblem(@RequestParam String problemID){
+        solverService.removeProblem(UUID.fromString(problemID));
+        return Result.OK();
     }
 
 }
