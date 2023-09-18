@@ -34,6 +34,11 @@ public class RoutingEntity {
     @PlanningVariable(valueRangeProviderRefs = "orderRange")
     private Integer order;
 
+    private boolean start;
+    private boolean end;
+
+    private Integer totalPointsNum;
+
     public RoutingEntity(Long id,Point point){
         this.id=id;
         this.visitPoint=point;

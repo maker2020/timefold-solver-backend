@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.keyvalues.optaplanner.common.Result;
+import com.keyvalues.optaplanner.constant.CommonConstant;
 import com.keyvalues.optaplanner.maprouting.controller.vo.PointInputVo;
 import com.keyvalues.optaplanner.maprouting.domain.MapRoutingSolution;
 import com.keyvalues.optaplanner.maprouting.service.SolverService;
@@ -44,14 +45,25 @@ public class MapRoutingController {
     @PostMapping("/solve")
     @Operation(summary = "根据选点求解优化线路")
     public Result<?> solve(@RequestBody PointInputVo pointInputVo){
-        MapRoutingSolution solution = solverService.mapRoutingSolve(pointInputVo);
-        return Result.OK(solution);
+        try {
+            MapRoutingSolution solution = solverService.mapRoutingSolve(pointInputVo);
+            return Result.OK(solution);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return Result.failed(CommonConstant.FAILED,e.getMessage());
+        }
     }
 
     @PostMapping("/solveAsync")
     @Operation(summary = "根据选点求解优化线路(异步求解，轮询获取最新计算结果)")
     public Result<?> solveAsync(@RequestBody PointInputVo pointInputVo){
-        Result<?> result = solverService.mapRoutingSolveAsync(pointInputVo);
+        Result<?> result;
+        try {
+            result = solverService.mapRoutingSolveAsync(pointInputVo);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            result = Result.failed(CommonConstant.FAILED,e.getMessage());
+        }
         return result;
     }
 

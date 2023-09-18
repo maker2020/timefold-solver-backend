@@ -62,11 +62,11 @@ public class SolverServiceImpl implements SolverService{
     }
 
     @Override
-    public MapRoutingSolution mapRoutingSolve(PointInputVo pointInputVo) {
+    public MapRoutingSolution mapRoutingSolve(PointInputVo pointInputVo) throws Exception{
         List<Point> points = pointInputVo.getPoints();
         // 构造问题丢给求解器求解。
-        MapRoutingSolution solution = generateSolution(points);
-        
+        MapRoutingSolution solution;
+        solution = generateSolution(pointInputVo);
         // 不共享、用户定义部分配置
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(pointInputVo.getTimeLimit()));
         SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
@@ -76,11 +76,10 @@ public class SolverServiceImpl implements SolverService{
     }
 
     @Override
-    public Result<?> mapRoutingSolveAsync(PointInputVo pointInputVo) {
-        List<Point> points = pointInputVo.getPoints();
-        MapRoutingSolution solution = generateSolution(points);
+    public Result<?> mapRoutingSolveAsync(PointInputVo pointInputVo) throws Exception{
+        MapRoutingSolution solution = generateSolution(pointInputVo);
         log.info("problem已构建,正在初始化辅助数据...");
-        List<List<Point>> p2pList = combinePoint(points, 2);
+        List<List<Point>> p2pList = combinePoint(pointInputVo.getPoints(), 2);
         Map<String,Integer> distanceMap = createDistanceMap(p2pList);
         MapRoutingController.p2pDistanceMap.putAll(distanceMap);
         
@@ -139,9 +138,14 @@ public class SolverServiceImpl implements SolverService{
      * 构建问题
      * @return
      */
-    private MapRoutingSolution generateSolution(List<Point> points){
+    private MapRoutingSolution generateSolution(PointInputVo pointInputVo) throws Exception{
+        List<Point> points = pointInputVo.getPoints();
+        if(points==null || points.size()<3){
+            throw new Exception("问题构建失败");
+        }
         MapRoutingSolution solution=new MapRoutingSolution();
         solution.setPointList(points);
+        // 
         List<Integer> orderRange=new ArrayList<>();
         for(int i=0;i<points.size();i++){
             orderRange.add(i);
@@ -150,7 +154,20 @@ public class SolverServiceImpl implements SolverService{
         List<RoutingEntity> routing=new ArrayList<>();
         long id=0;
         for(int i=0;i<points.size();i++){
-            routing.add(new RoutingEntity(id++,points.get(i)));
+            Point point = points.get(i);
+            RoutingEntity entity = new RoutingEntity(id++,point);
+            entity.setTotalPointsNum(points.size());
+            if(point.equals(pointInputVo.getStart())){
+                entity.setStart(true);
+                entity.setOrder(0);
+                orderRange.remove(0);
+            }
+            if(point.equals(pointInputVo.getEnd())){
+                entity.setEnd(true);
+                entity.setOrder(points.size()-1);
+                orderRange.remove(orderRange.size()-1);
+            }
+            routing.add(entity);
         }
         solution.setRouting(routing);
         return solution;
