@@ -201,12 +201,16 @@ public class SolverServiceImpl implements SolverService{
      */
     private MapRoutingSolution generateSolution(PointInputVo pointInputVo) throws Exception{
         List<Point> points = pointInputVo.getPoints();
+        List<String> visitors = pointInputVo.getVisitors();
         if(points==null || points.size()<3){
             throw new Exception("问题构建失败");
         }
         MapRoutingSolution solution=new MapRoutingSolution();
         solution.setPointList(points);
-        solution.setVisitor(pointInputVo.getVisitors());
+        if(visitors==null){
+            visitors=new ArrayList<>(){{add("Visitor");}};
+        }
+        solution.setVisitor(visitors);
         List<Integer> orderRange=new ArrayList<>();
         for(int i=0;i<points.size();i++){
             orderRange.add(i);
