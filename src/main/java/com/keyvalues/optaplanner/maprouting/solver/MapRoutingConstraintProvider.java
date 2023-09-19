@@ -14,7 +14,7 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[]{
-            // visitConstraint(constraintFactory),
+            visitorConstraint(constraintFactory),
             orderConstraint(constraintFactory),
             calculateTotalOptimalValueConstraint(constraintFactory),
             startingEntityOrderConstraint(constraintFactory),
@@ -71,10 +71,11 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
      * <p>
      * 因此，实际应该是甲：o->b，乙：o->c->a。</p>
      */
-    @SuppressWarnings("unused")
+    // @SuppressWarnings("unused")
     private Constraint visitorConstraint(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(RoutingEntity.class)
-                .join(RoutingEntity.class,Joiners.lessThan(RoutingEntity::getId),Joiners.equal(RoutingEntity::getVisitor))
+                .join(RoutingEntity.class)
+                .filter((r1,r2)->r1.getOrder()+1==r2.getOrder() && r1.getVisitor().equals(r2.getVisitor()))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Visitor Unique");
     }
