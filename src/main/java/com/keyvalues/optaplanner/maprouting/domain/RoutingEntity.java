@@ -4,6 +4,7 @@ import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
+import com.keyvalues.optaplanner.common.enums.TacticsEnum;
 import com.keyvalues.optaplanner.geo.Point;
 import com.keyvalues.optaplanner.maprouting.controller.MapRoutingController;
 
@@ -43,7 +44,9 @@ public class RoutingEntity {
     private boolean start;
     private boolean end;
 
+    // ConstraintProvider无法获取solution，配置参数只能存在entity
     private Integer totalPointsNum;
+    private TacticsEnum tactics;
 
     public RoutingEntity(Long id,Point point){
         this.id=id;
@@ -68,13 +71,16 @@ public class RoutingEntity {
         return (int)(distance*1000);
     }
 
-    public static int getApiDistance(RoutingEntity r1,RoutingEntity r2){
+    public static int getApiOptimalValue(RoutingEntity r1,RoutingEntity r2){
         Point a = r1.getVisitPoint();
         Point b = r2.getVisitPoint();
+        TacticsEnum tactics=r1.getTactics();
         Integer orderA = r1.getOrder();
         Integer orderB = r2.getOrder();
-        String key=orderA>orderB?b.toString()+"->"+a.toString():a.toString()+"->"+b.toString();
-        return MapRoutingController.p2pDistanceMap.get(key);
+        StringBuilder sb=new StringBuilder();
+        String key=orderA>orderB?sb.append(b.toString()).append("->").append(a.toString()).append(":").append(tactics).toString()
+                :sb.append(a.toString()).append("->").append(b.toString()).append(":").append(tactics).toString();
+        return MapRoutingController.p2pOptimalValueMap.get(key);
     }
 
     // public int getRoutingDistance(){

@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.keyvalues.optaplanner.common.Result;
+import com.keyvalues.optaplanner.common.enums.TacticsEnum;
 import com.keyvalues.optaplanner.geo.Point;
 import com.keyvalues.optaplanner.maprouting.api.BaiduDirection;
 import com.keyvalues.optaplanner.maprouting.controller.MapRoutingController;
@@ -82,8 +83,8 @@ public class SolverServiceImpl implements SolverService{
         MapRoutingSolution solution = generateSolution(pointInputVo);
         log.info("problem已构建,正在初始化辅助数据...");
         List<List<Point>> p2pList = combinePoint(pointInputVo.getPoints(), 2);
-        Map<String,Integer> distanceMap = createDistanceMap(p2pList);
-        MapRoutingController.p2pDistanceMap.putAll(distanceMap);
+        Map<String,Integer> optimalValueMap = createOptimalValueMapMap(p2pList,pointInputVo.getTactics());
+        MapRoutingController.p2pOptimalValueMap.putAll(optimalValueMap);
         
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(pointInputVo.getTimeLimit()));
         SolverFactory<MapRoutingSolution> factory = SolverFactory.create(solverConfig);
@@ -221,7 +222,12 @@ public class SolverServiceImpl implements SolverService{
         for(int i=0;i<points.size();i++){
             Point point = points.get(i);
             RoutingEntity entity = new RoutingEntity(id++,point);
+            
+            // 配置代solution存储的全局参数
             entity.setTotalPointsNum(points.size());
+            entity.setTactics(pointInputVo.getTactics());
+
+            // 固定起点终点
             if(point.equals(pointInputVo.getStart())){
                 entity.setStart(true);
                 entity.setOrder(0);
@@ -260,31 +266,43 @@ public class SolverServiceImpl implements SolverService{
     /**
      * baiduapi获取两点最短规划距离
      */
-    private int calculateDistance(Point point1,Point point2){
-        int distance=0;
-        String params="""
+    private int calculateOptimalValue(Point point1,Point point2,TacticsEnum tactics){
+        int optimalValue=0;
+        String params=String.format("""
             {
-                'tactics':2
+                'tactics':%d
             }
-            """;
+            """,tactics.getValue());
         Result<JSONObject> result=baiduDirection.direction(point1.longitude, point1.latitude, point2.longitude, point2.latitude, params);
-        distance=result.getData().getJSONArray("routes").getJSONObject(0).getIntValue("distance");
-        return distance;
+        // distance=result.getData().getJSONArray("routes").getJSONObject(0).getIntValue("distance");
+        JSONObject result_ = result.getData().getJSONArray("routes").getJSONObject(0);
+        if(TacticsEnum.TWO.equals(tactics)){
+            optimalValue=result_.getIntValue("distance");  
+        }else if(TacticsEnum.THIRTEEN.equals(tactics)){
+            optimalValue=result_.getIntValue("duration");
+        }else if(TacticsEnum.SIX.equals(tactics)){
+            optimalValue=result_.getIntValue("taxi_fee");
+        }
+        return optimalValue;
     }
 
-    private Map<String,Integer> createDistanceMap(List<List<Point>> p2pList){
-        Map<String,Integer> p2pDistanceMap=new HashMap<>();
+    private Map<String,Integer> createOptimalValueMapMap(List<List<Point>> p2pList,TacticsEnum tactics){
+        Map<String,Integer> p2pOptimalValueMap=new HashMap<>();
         for (List<Point> point : p2pList) {
             Point a=point.get(0);
             Point b=point.get(1);
+            StringBuilder sb=new StringBuilder();
             // a->b
-            int distance0 = calculateDistance(a, b);
-            p2pDistanceMap.put(a.toString()+"->"+b.toString(), distance0);
+            int optimalValue0 = calculateOptimalValue(a, b, tactics);
+            String key0=sb.append(a.toString()).append("->").append(b.toString()).append(":").append(tactics).toString();
+            p2pOptimalValueMap.put(key0, optimalValue0);
+            sb.setLength(0);
             // b->a
-            int distance1 = calculateDistance(b, a);
-            p2pDistanceMap.put(b.toString()+"->"+a.toString(), distance1);
+            int optimalValue1 = calculateOptimalValue(b, a, tactics);
+            String key1=sb.append(b.toString()).append("->").append(a.toString()).append(":").append(tactics).toString();
+            p2pOptimalValueMap.put(key1, optimalValue1);
         }
-        return p2pDistanceMap;
+        return p2pOptimalValueMap;
     }
     
 }

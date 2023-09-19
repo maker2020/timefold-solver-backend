@@ -16,7 +16,7 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
         return new Constraint[]{
             // visitConstraint(constraintFactory),
             orderConstraint(constraintFactory),
-            calculateTotalDistanceConstraint(constraintFactory),
+            calculateTotalOptimalValueConstraint(constraintFactory),
             startingEntityOrderConstraint(constraintFactory),
             endingEntityOrderConstraint(constraintFactory)
             // testConstraint(constraintFactory)
@@ -86,14 +86,14 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
     // .asConstraint("MIN DISTANCE");
 
     /**
-     * 总路程最短软约束
+     * 规划策略最优值整体最优的软约束
      */
-    private Constraint calculateTotalDistanceConstraint(ConstraintFactory factory) {
+    private Constraint calculateTotalOptimalValueConstraint(ConstraintFactory factory) {
         return factory.forEach(RoutingEntity.class)
             .join(RoutingEntity.class)
             .filter((r1, r2) -> r1.getOrder() + 1 == r2.getOrder())
-            .penalize(HardSoftScore.ONE_SOFT,(r1,r2)->RoutingEntity.getApiDistance(r1, r2))
-            .asConstraint("MIN DISTANCE");
+            .penalize(HardSoftScore.ONE_SOFT,(r1,r2)->RoutingEntity.getApiOptimalValue(r1, r2))
+            .asConstraint("MIN OPTIMAL VALUE");
     }
 
     // public static void main(String[] args) {

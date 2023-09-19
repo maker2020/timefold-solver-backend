@@ -10,6 +10,7 @@ import com.keyvalues.optaplanner.maprouting.domain.MapRoutingSolution;
 
 public interface SolverService {
 
+    @Deprecated
     MapRoutingSolution mapRoutingSolve(PointInputVo pointInputVo) throws Exception;
     /**
      * 异步求解（用户必须等待初始化完成后退出才能后台计算，因为初始化结束后才能拿到problemID）

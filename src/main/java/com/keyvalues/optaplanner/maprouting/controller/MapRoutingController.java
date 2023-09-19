@@ -30,9 +30,9 @@ public class MapRoutingController {
 
     /**
      * 暂时这么用，后面统一管理
-     * 点距离关系 缓存redis可
+     * 点与点之间关于某策略最优值的关系 缓存redis可
      */
-    public static final Map<String,Integer> p2pDistanceMap=new ConcurrentHashMap<>();
+    public static final Map<String,Integer> p2pOptimalValueMap=new ConcurrentHashMap<>();
 
     @Autowired
     private SolverService solverService;
@@ -46,8 +46,9 @@ public class MapRoutingController {
     @Operation(summary = "根据选点求解优化线路")
     public Result<?> solve(@RequestBody PointInputVo pointInputVo){
         try {
-            MapRoutingSolution solution = solverService.mapRoutingSolve(pointInputVo);
-            return Result.OK(solution);
+            // MapRoutingSolution solution = solverService.mapRoutingSolve(pointInputVo);
+            // return Result.OK(solution);
+            return Result.OK();
         } catch (Exception e) {
             log.error(e.getMessage());
             return Result.failed(CommonConstant.FAILED,e.getMessage());

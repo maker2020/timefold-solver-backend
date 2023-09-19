@@ -2,6 +2,7 @@ package com.keyvalues.optaplanner.maprouting.controller.vo;
 
 import java.util.List;
 
+import com.keyvalues.optaplanner.common.enums.TacticsEnum;
 import com.keyvalues.optaplanner.geo.Point;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +27,9 @@ public class PointInputVo {
 
     @Schema(description = "计算时间限制(s)")
     private Long timeLimit;
+
+    @Schema(description = "地图API规划策略")
+    private TacticsEnum tactics;
 
     // @Schema(description = "是否后台计算(默认true)")
     // private Boolean isBackground;
