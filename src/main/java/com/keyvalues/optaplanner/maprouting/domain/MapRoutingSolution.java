@@ -32,6 +32,13 @@ public class MapRoutingSolution {
     @ValueRangeProvider(id = "orderRange")
     private List<Integer> orderRange;
 
+    /**
+     * 注意这个visitor当前假设都是同一出发点被派往不同地方送货
+     */
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider(id = "visitorList")
+    private List<String> visitor;
+
     @PlanningEntityCollectionProperty
     private List<RoutingEntity> routing;
 

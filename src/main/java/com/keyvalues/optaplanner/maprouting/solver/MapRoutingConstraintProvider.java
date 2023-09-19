@@ -65,6 +65,27 @@ public class MapRoutingConstraintProvider implements ConstraintProvider{
     }
 
     /**
+     * 每个访问者就本身所走路径而言，所访问点位不重复的约束。
+     * <p>
+     * 特殊：甲：o->c->b,乙：o->c->a。实际上对于甲或乙某一个来说，c只是经过（导航API规划途径的）。</p>
+     * <p>
+     * 因此，实际应该是甲：o->b，乙：o->c->a。</p>
+     */
+    @SuppressWarnings("unused")
+    private Constraint visitorConstraint(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(RoutingEntity.class)
+                .join(RoutingEntity.class,Joiners.lessThan(RoutingEntity::getId),Joiners.equal(RoutingEntity::getVisitor))
+                .penalize(HardSoftScore.ONE_HARD)
+                .asConstraint("Visitor Unique");
+    }
+
+    // return factory.forEach(RoutingEntity.class)
+    // .join(RoutingEntity.class)
+    // .filter((r1, r2) -> r1.getOrder() + 1 == r2.getOrder() && r1.getVisitor() == visitor1 && r2.getVisitor() == visitor2)
+    // .penalize(HardSoftScore.ONE_SOFT, (r1, r2) -> RoutingEntity.getApiDistance(r1, r2))
+    // .asConstraint("MIN DISTANCE");
+
+    /**
      * 总路程最短软约束
      */
     private Constraint calculateTotalDistanceConstraint(ConstraintFactory factory) {

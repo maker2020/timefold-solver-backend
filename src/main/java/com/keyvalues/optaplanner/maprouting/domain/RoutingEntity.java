@@ -34,6 +34,12 @@ public class RoutingEntity {
     @PlanningVariable(valueRangeProviderRefs = "orderRange")
     private Integer order;
 
+    /**
+     * 规划点的访问者
+     */
+    @PlanningVariable(valueRangeProviderRefs = "visitorList")
+    private String visitor;
+
     private boolean start;
     private boolean end;
 

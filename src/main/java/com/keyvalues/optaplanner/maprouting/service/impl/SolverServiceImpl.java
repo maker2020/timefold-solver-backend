@@ -23,6 +23,7 @@ import org.optaplanner.core.config.solver.SolverConfig;
 import org.optaplanner.core.config.solver.SolverManagerConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.keyvalues.optaplanner.common.Result;
@@ -130,9 +131,8 @@ public class SolverServiceImpl implements SolverService{
         }
         MapRoutingSolution solution = (MapRoutingSolution)problemUpdate.get("updatedSolution");
         SolverStatus status = (SolverStatus)problemUpdate.get("status");
-        List<RoutingEntity> routing = solution.getRouting();
         // 跟某个阶段的解 所绑定的状态为status常量字段
-        updateData.put("routing", routing);
+        updateData.put("solution", solution);
         updateData.put("status", status);
         return updateData;
     }
@@ -161,9 +161,10 @@ public class SolverServiceImpl implements SolverService{
             problemData.put("problemID", problemID);
             // 展示solution信息：包含用户输入的条件、当前最新的一次优化结果
             ConcurrentLinkedDeque<Map<String,Object>> solutionQueue = solverSolutionQueue.get(problemID);
-            Map<String,Object> lastSolution = solutionQueue.getLast();
-            MapRoutingSolution solution=(MapRoutingSolution)lastSolution.get("updatedSolution");
+            Map<String,Object> lastSolution = solutionQueue.peekLast();
+            MapRoutingSolution solution=lastSolution==null?null:(MapRoutingSolution)lastSolution.get("updatedSolution");
             problemData.put("solution", solution);
+            result.add(problemData);
         }
         return result;
     }
@@ -205,7 +206,7 @@ public class SolverServiceImpl implements SolverService{
         }
         MapRoutingSolution solution=new MapRoutingSolution();
         solution.setPointList(points);
-        // 
+        solution.setVisitor(pointInputVo.getVisitors());
         List<Integer> orderRange=new ArrayList<>();
         for(int i=0;i<points.size();i++){
             orderRange.add(i);

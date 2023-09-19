@@ -15,6 +15,9 @@ public class PointInputVo {
     @Schema(description = "选点的列表",requiredMode = RequiredMode.REQUIRED)
     private List<Point> points;
 
+    @Schema(description = "访问者列表（出发点相同）发派不同地点。若提供访问者，必须规定起点")
+    private List<String> visitors;
+
     @Schema(description = "规定起点")
     private Point start;
     
