@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://www.optaplanner.org/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://www.optaplanner.org/xsd/solver https://www.optaplanner.org/xsd/solver/solver.xsd">
+  <!-- To slowly prove there are no bugs in this code -->
+  <!--<environmentMode>FULL_ASSERT</environmentMode>-->
+  <!-- To solve faster by saturating multiple CPU cores -->
+  <!--<moveThreadCount>AUTO</moveThreadCount>-->
+
+  <solutionClass>com.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution</solutionClass>
+  <entityClass>com.keyvalues.optaplanner.maprouting.domain.Visitor</entityClass>
+  <entityClass>com.keyvalues.optaplanner.maprouting.domain.Customer</entityClass>
+
+  <scoreDirectorFactory>
+    <constraintProviderClass>com.keyvalues.optaplanner.maprouting.solver.VisitorRoutingConstraint</constraintProviderClass>
+    <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+  </scoreDirectorFactory>
+
+  <termination>
+    <!-- <minutesSpentLimit>5</minutesSpentLimit> -->
+    <secondsSpentLimit>7</secondsSpentLimit>
+  </termination>
+  <constructionHeuristic>
+  </constructionHeuristic>
+  <localSearch>
+        <termination>
+          <unimprovedSecondsSpentLimit>120</unimprovedSecondsSpentLimit>
+        </termination>
+  </localSearch>
+</solver>

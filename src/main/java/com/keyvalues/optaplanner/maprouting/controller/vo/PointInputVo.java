@@ -31,6 +31,4 @@ public class PointInputVo {
     @Schema(description = "地图API规划策略")
     private TacticsEnum tactics;
 
-    // @Schema(description = "是否后台计算(默认true)")
-    // private Boolean isBackground;
 }
