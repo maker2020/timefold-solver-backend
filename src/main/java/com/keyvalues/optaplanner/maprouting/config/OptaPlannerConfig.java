@@ -9,25 +9,36 @@ import org.optaplanner.core.config.solver.SolverManagerConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.keyvalues.optaplanner.maprouting.domain.MapRoutingSolution;
+import com.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution;
 
 @Configuration
 public class OptaPlannerConfig {
     
     @Bean
     SolverConfig solverConfig(){
-        return SolverConfig.createFromXmlResource("optaplanner/maproutingSolverConfig.xml");
+        return SolverConfig.createFromXmlResource("optaplanner/visitorRoutingSolverConfig.xml");
     }
 
     @Bean
-    SolverFactory<MapRoutingSolution> solverFactory() {
+    SolverFactory<VisitorRoutingSolution> solverFactory() {
         // 构建 SolverFactory
         return SolverFactory.create(solverConfig());
     }
 
     @Bean
-    SolverManager<MapRoutingSolution, UUID> solverManager() {
+    SolverManager<VisitorRoutingSolution, UUID> solverManager() {
         return SolverManager.create(solverFactory(), new SolverManagerConfig());
     }
+
+    // @Bean
+    // SolverFactory<MapRoutingSolution> solverFactory() {
+    //     // 构建 SolverFactory
+    //     return SolverFactory.create(solverConfig());
+    // }
+
+    // @Bean
+    // SolverManager<MapRoutingSolution, UUID> solverManager() {
+    //     return SolverManager.create(solverFactory(), new SolverManagerConfig());
+    // }
 
 }

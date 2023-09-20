@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import com.keyvalues.optaplanner.common.persistence.jackson.JacksonUniqueIdGenerator;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,7 @@ public class Visitor extends AbstractPersistable{
     /**
      * 默认不会重复
      */
+    @Schema(hidden = true)
     @PlanningListVariable(valueRangeProviderRefs = "customerList")
     protected List<Customer> customers=new ArrayList<>();
 

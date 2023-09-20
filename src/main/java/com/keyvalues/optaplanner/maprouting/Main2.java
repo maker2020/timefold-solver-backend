@@ -18,6 +18,9 @@ import com.keyvalues.optaplanner.maprouting.domain.Visitor;
 import com.keyvalues.optaplanner.maprouting.domain.VisitorBase;
 import com.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution;
 
+/**
+ * 验证成功，将(20,0)换成(18,0)，方案变为第二辆车直接去(18,0)。
+ */
 public class Main2 {
     
     public static void main(String[] args) throws JsonProcessingException {
@@ -32,7 +35,7 @@ public class Main2 {
         // locationList.add(new Location(id__++,new Point(0, 0)));
         locationList.add(new Location(id__++,new Point(0, 8)));
         locationList.add(new Location(id__++,new Point(9, 15)));
-        locationList.add(new Location(id__++,new Point(20, 0)));
+        locationList.add(new Location(id__++,new Point(18, 0)));
         locationList.add(new Location(id__++,new Point(20, 20)));
         // 所有点位
         problem.setLocationList(locationList);
@@ -50,7 +53,7 @@ public class Main2 {
         List<VisitorBase> visitorBases=new ArrayList<>(){{
             // locationList.get(0))
             // 引用还是new?都无所谓
-            add(new VisitorBase(0,new Location(0,new Point(0, 0))));
+            add(new VisitorBase(0,new Location(99,new Point(0, 0))));
         }};
         problem.setVisitorBases(visitorBases);
         // 访问者列表(1,2位)

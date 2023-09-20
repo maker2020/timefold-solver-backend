@@ -37,6 +37,11 @@ public class Customer extends AbstractPersistable{
     @NextElementShadowVariable(sourceVariableName = "customers")
     protected Customer nextCustomer;
 
+    public Customer(long id,Location location){
+        super(id);
+        this.location=location;
+    }
+
     /**
      * 上一个点到这里的距离
      * @return

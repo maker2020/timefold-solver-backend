@@ -6,6 +6,7 @@ import org.springframework.util.StringUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.keyvalues.optaplanner.common.Result;
+import com.keyvalues.optaplanner.common.enums.TacticsEnum;
 import com.keyvalues.optaplanner.geo.Point;
 import com.keyvalues.optaplanner.maprouting.api.BaiduDirection;
 import com.keyvalues.optaplanner.maprouting.utils.BaiduMapUtil;
@@ -31,6 +32,27 @@ public class BaiduDirectionImpl implements BaiduDirection{
             return Result.failed("路径规划接口出错");
         }
         return Result.OK(res.getJSONObject("result"));
+    }
+
+    @Override
+    public long calculateOptimalValue(Point point1, Point point2, TacticsEnum tactics) {
+        long optimalValue=0;
+        String params=String.format("""
+            {
+                'tactics':%d
+            }
+            """,tactics.getValue());
+        Result<JSONObject> result=direction(point1.longitude, point1.latitude, point2.longitude, point2.latitude, params);
+        // distance=result.getData().getJSONArray("routes").getJSONObject(0).getIntValue("distance");
+        JSONObject result_ = result.getData().getJSONArray("routes").getJSONObject(0);
+        if(TacticsEnum.TWO.equals(tactics)){
+            optimalValue=result_.getIntValue("distance");  
+        }else if(TacticsEnum.THIRTEEN.equals(tactics)){
+            optimalValue=result_.getIntValue("duration");
+        }else if(TacticsEnum.SIX.equals(tactics)){
+            optimalValue=result_.getIntValue("taxi_fee");
+        }
+        return optimalValue;
     }
     
 }
