@@ -17,7 +17,6 @@ import org.optaplanner.core.config.solver.SolverManagerConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyvalues.optaplanner.common.Result;
 import com.keyvalues.optaplanner.common.enums.TacticsEnum;
 import com.keyvalues.optaplanner.geo.Point;
@@ -99,9 +98,7 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         VisitorRoutingSolution solution=(VisitorRoutingSolution)problemData.get("updatedSolution");
         SolverStatus status=(SolverStatus)problemData.get("status");
 
-        // 问题/solution 必须用ObjectMapper作为序列化json框架，因为目前搭配了@IdentifyInfo为循环引用标识
-        ObjectMapper objectMapper=new ObjectMapper();
-        data.put("solution", objectMapper.writeValueAsString(solution));
+        data.put("solution", solution.getNoEachReferenceSolution(null));
         data.put("status", status);
         return data;
     }
@@ -130,9 +127,8 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         for(Visitor visitor:visitors){
             VisitorBase base = visitor.getBase();
             Location baseLocation=base.getLocation();
-            // 当前默认基地都是同一个，给identify表示设一样的
-            base.setId(0);
-            baseLocation.setId(0);
+            base.setId(id_);
+            baseLocation.setId(id_);
             visitor.setId(id_);
             bases.add(base);
             id_++;

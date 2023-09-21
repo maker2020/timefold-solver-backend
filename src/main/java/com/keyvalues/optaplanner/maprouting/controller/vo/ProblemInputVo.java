@@ -13,6 +13,9 @@ import lombok.Data;
 @Schema(description = "线路规划的问题输入对象")
 @Data
 public class ProblemInputVo {
+
+    @Schema(description = "某次求解的问题命名")
+    private String problemName;
     
     @Schema(description = "选点（客户点）的列表 ：注意不包含起点",requiredMode = RequiredMode.REQUIRED)
     private List<Location> locationList;
