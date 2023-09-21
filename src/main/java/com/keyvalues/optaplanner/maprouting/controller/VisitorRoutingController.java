@@ -2,7 +2,6 @@ package com.keyvalues.optaplanner.maprouting.controller;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class VisitorRoutingController {
   
-    public static final Map<String,Long> p2pOptimalValueMap=new ConcurrentHashMap<>();
+    // public static final Map<String,Long> p2pOptimalValueMap=new ConcurrentHashMap<>();
 
     @Autowired
     VisitorRoutingService visitorRoutingService;

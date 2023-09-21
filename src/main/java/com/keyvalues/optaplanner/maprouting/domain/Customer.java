@@ -7,10 +7,12 @@ import org.optaplanner.core.api.domain.variable.PreviousElementShadowVariable;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.keyvalues.optaplanner.common.enums.TacticsEnum;
 import com.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import com.keyvalues.optaplanner.common.persistence.jackson.JacksonUniqueIdGenerator;
+import com.keyvalues.optaplanner.constant.RedisConstant;
 import com.keyvalues.optaplanner.geo.Point;
-import com.keyvalues.optaplanner.maprouting.controller.VisitorRoutingController;
+import com.keyvalues.optaplanner.maprouting.service.impl.VisitorRoutingServiceImpl;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -61,8 +63,10 @@ public class Customer extends AbstractPersistable{
         }else{
             previousPoint = previousCustomer.location.getPoint();
         }
-        String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).toString();
-        return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
+        String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).append(":").append(TacticsEnum.TWO).toString();
+        Object optimalValue = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
+        return optimalValue==null?0:(long)optimalValue;
     }
 
     /**
@@ -74,7 +78,9 @@ public class Customer extends AbstractPersistable{
         StringBuilder sb=new StringBuilder();
         Point basePoint=visitor.getBase().getLocation().getPoint();
         String key=sb.append(location.getPoint().toString()).append("->").append(basePoint.toString()).toString();
-        return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
+        // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
+        Object optimalValue=VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        return optimalValue==null?0:(long)optimalValue;
     }
 
 }

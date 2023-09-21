@@ -20,9 +20,9 @@ import org.springframework.stereotype.Service;
 
 import com.keyvalues.optaplanner.common.Result;
 import com.keyvalues.optaplanner.common.enums.TacticsEnum;
+import com.keyvalues.optaplanner.constant.RedisConstant;
 import com.keyvalues.optaplanner.geo.Point;
 import com.keyvalues.optaplanner.maprouting.api.BaiduDirection;
-import com.keyvalues.optaplanner.maprouting.controller.VisitorRoutingController;
 import com.keyvalues.optaplanner.maprouting.controller.vo.ProblemInputVo;
 import com.keyvalues.optaplanner.maprouting.domain.Customer;
 import com.keyvalues.optaplanner.maprouting.domain.Location;
@@ -30,9 +30,12 @@ import com.keyvalues.optaplanner.maprouting.domain.Visitor;
 import com.keyvalues.optaplanner.maprouting.domain.VisitorBase;
 import com.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution;
 import com.keyvalues.optaplanner.maprouting.service.VisitorRoutingService;
+import com.keyvalues.optaplanner.utils.RedisUtil;
 
 @Service
 public class VisitorRoutingServiceImpl implements VisitorRoutingService{
+
+    public static RedisUtil redisUtil;
 
     private Map<UUID,SolverJob<VisitorRoutingSolution,UUID>> solverJobMap;
     private final SolverConfig solverConfig;
@@ -40,20 +43,21 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
 
     private Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueue=new ConcurrentHashMap<>(); 
 
-    public VisitorRoutingServiceImpl(SolverManager<VisitorRoutingSolution, UUID> solverManager,SolverConfig solverConfig,BaiduDirection baiduDirection) {
+    public VisitorRoutingServiceImpl(SolverManager<VisitorRoutingSolution, UUID> solverManager,SolverConfig solverConfig,BaiduDirection baiduDirection,RedisUtil redisUtil) {
         solverJobMap=new ConcurrentHashMap<>();
         this.solverConfig = solverConfig;
         this.baiduDirection = baiduDirection;
+        VisitorRoutingServiceImpl.redisUtil=redisUtil;
     }
 
     @Override
     public Result<?> solveAsync(ProblemInputVo problemInputVo) {
         // 构建问题
         VisitorRoutingSolution initializedSolution = generateSolution(problemInputVo);
-        // 构建P2P制定策略的优化值
-        Map<String,Long> optimalValMap = createOptimalValueMapMap(initializedSolution,TacticsEnum.TWO);
+        // 构建P2P制定策略的优化值，Redis保存
+        createOptimalValueMap(initializedSolution,TacticsEnum.TWO);
         // 全局保存
-        VisitorRoutingController.p2pOptimalValueMap.putAll(optimalValMap);
+        // VisitorRoutingController.p2pOptimalValueMap.putAll(optimalValMap);     
         // 写入可选配置、初始化相关管理对象
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));
         SolverFactory<VisitorRoutingSolution> factory = SolverFactory.create(solverConfig);
@@ -204,7 +208,7 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
      * @param tactics API策略选项
      * @return ()->():xx => Long
      */
-    private Map<String,Long> createOptimalValueMapMap(VisitorRoutingSolution initializedSolution,TacticsEnum tactics){
+    private void createOptimalValueMap(VisitorRoutingSolution initializedSolution,TacticsEnum tactics){
         class Combine{
             /**
              * 不会改变元素的组合
@@ -241,22 +245,31 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         combinationList.addAll(combinationList2);
 
         // 构建策略最优值p2p图
-        Map<String,Long> p2pOptimalValueMap=new HashMap<>();
         for (List<Point> point : combinationList) {
             Point a=point.get(0);
             Point b=point.get(1);
             StringBuilder sb=new StringBuilder();
             // a->b
-            long optimalValue0 = baiduDirection.calculateOptimalValue(a, b, tactics);
             String key0=sb.append(a.toString()).append("->").append(b.toString()).append(":").append(tactics).toString();
-            p2pOptimalValueMap.put(key0, optimalValue0);
+            long optimalValue0;
+            // 先判断缓存
+            if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key0)){
+                optimalValue0=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key0);
+            }else{
+                optimalValue0 = baiduDirection.calculateOptimalValue(a, b, tactics);
+                redisUtil.hset(RedisConstant.p2pOptimalValueMap, key0, optimalValue0, 1800);
+            }
             sb.setLength(0);
             // b->a
-            long optimalValue1 = baiduDirection.calculateOptimalValue(b, a, tactics);
             String key1=sb.append(b.toString()).append("->").append(a.toString()).append(":").append(tactics).toString();
-            p2pOptimalValueMap.put(key1, optimalValue1);
+            long optimalValue1;
+            if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key1)){
+                optimalValue1=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key1);
+            }else{
+                optimalValue1 = baiduDirection.calculateOptimalValue(b, a, tactics);
+                redisUtil.hset(RedisConstant.p2pOptimalValueMap, key1, optimalValue1, 1800);
+            }
         }
-        return p2pOptimalValueMap;
     }
 
 }
