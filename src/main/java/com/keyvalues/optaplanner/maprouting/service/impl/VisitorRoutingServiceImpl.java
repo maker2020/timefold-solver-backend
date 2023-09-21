@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -101,6 +102,65 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         data.put("solution", solution.getNoEachReferenceSolution(null));
         data.put("status", status);
         return data;
+    }
+
+    @Override
+    public void removeProblem(UUID problemID) {
+        // 判断问题存在就终止
+        if(solverJobMap.containsKey(problemID)){
+            SolverJob<VisitorRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
+            solverJob.terminateEarly();
+        }
+        // 从管理对象中移除
+        solverJobMap.remove(problemID);
+        solverSolutionQueue.remove(problemID);
+    }
+
+    @Override
+    public Map<String, Object> terminalProblem(UUID problemID) {
+        Map<String,Object> result=null;
+        // 判断问题不存在就返回null
+        if(!solverJobMap.containsKey(problemID)){
+            return null;
+        }
+        SolverJob<VisitorRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
+        // 阻塞到退出
+        solverJob.terminateEarly();
+        ConcurrentLinkedDeque<Map<String,Object>> solutionDeque = solverSolutionQueue.get(problemID);
+        // 没有结果就也返回null
+        if(solutionDeque==null || solutionDeque.size()==0) {
+            return null;
+        }
+        Map<String,Object> lastSolution = solutionDeque.getLast();
+        VisitorRoutingSolution solution=(VisitorRoutingSolution)lastSolution.get("updatedSolution");
+        // 拿到后不清除，用户通过专门清除接口来清除
+        // solverJobMap.remove(problemID);
+        // solverSolutionQueue.remove(problemID);
+        result=new HashMap<>();
+        result.put("solution", solution.getNoEachReferenceSolution(null));
+        return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> listProblem() {
+        List<Map<String,Object>> problemList=new ArrayList<>();
+        Set<UUID> problemIDSet = solverJobMap.keySet();
+        for(UUID problemID:problemIDSet){
+            SolverJob<VisitorRoutingSolution,UUID> solverJob=solverJobMap.get(problemID);
+            Map<String,Object> solutionObj=new HashMap<>();
+            solutionObj.put("problemID", problemID);
+
+            SolverStatus solverStatus=solverJob.getSolverStatus();
+            solutionObj.put("status", solverStatus);
+
+            ConcurrentLinkedDeque<Map<String,Object>> solutionQueue = solverSolutionQueue.get(problemID);
+            Map<String,Object> latestSolution = solutionQueue.peekLast();
+            VisitorRoutingSolution solution=latestSolution==null?null:(VisitorRoutingSolution)latestSolution.get("updatedSolution");
+            solutionObj.put("suolution", solution.getNoEachReferenceSolution(null));
+
+            problemList.add(solutionObj);
+        }
+        return problemList;
     }
 
     private VisitorRoutingSolution generateSolution(ProblemInputVo problemInputVo){

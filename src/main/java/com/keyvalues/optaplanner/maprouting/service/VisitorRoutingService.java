@@ -1,5 +1,6 @@
 package com.keyvalues.optaplanner.maprouting.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,5 +22,25 @@ public interface VisitorRoutingService {
      * @return
      */
     Map<String,Object> pollUpdate(UUID problemID) throws Exception;
+
+    /**
+     * 终止及移除问题
+     * @param problemID
+     */
+    void removeProblem(UUID problemID);
+
+    /**
+     * 终止问题，并直接获取当前结果
+     * @param problemID
+     * @return
+     */
+    Map<String,Object> terminalProblem(UUID problemID);
+
+    /**
+     * <p>获取求解问题列表</p>
+     * 只包含状态，和问题ID，问题输入相关信息。要获取解需另行访问其他方法
+     * @return
+     */
+    List<Map<String,Object>> listProblem();
 
 }
