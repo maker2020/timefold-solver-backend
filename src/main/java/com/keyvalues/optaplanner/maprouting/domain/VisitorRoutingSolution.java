@@ -29,8 +29,8 @@ import lombok.ToString;
 @JsonIdentityInfo(generator = JacksonUniqueIdGenerator.class)
 public class VisitorRoutingSolution extends AbstractPersistable{    
 
-    @ProblemFactCollectionProperty
-    protected List<Location> locationList;
+    // @ProblemFactCollectionProperty
+    // protected List<Location> locationList;
 
     @ProblemFactCollectionProperty
     protected List<VisitorBase> visitorBases;
@@ -67,6 +67,10 @@ public class VisitorRoutingSolution extends AbstractPersistable{
             solution.putAll(extraData);
         }
         // 点/客户 列表
+        List<Location> locationList=new ArrayList<>();
+        for(Customer customer:customerList){
+            locationList.add(customer.getLocation());
+        }
         solution.put("locationList", locationList);
         
         // 访问者/车辆 列表及其访问点的 顺序

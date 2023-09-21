@@ -24,7 +24,7 @@ public class VisitorRoutingConstraint implements ConstraintProvider{
         return factory.forEach(Customer.class)
                 .filter(customer -> customer.getVisitor() != null)
                 .penalizeLong(HardSoftLongScore.ONE_SOFT,
-                        Customer::getDistanceFromPreviousStandstill)
+                        Customer::getOptimalValueFromPreviousStandstill)
                 .asConstraint("distanceToPreviousStandstill");
     }
 
@@ -35,7 +35,7 @@ public class VisitorRoutingConstraint implements ConstraintProvider{
         return factory.forEach(Customer.class)
                 .filter(customer -> customer.getVisitor() != null && customer.getNextCustomer() == null)
                 .penalizeLong(HardSoftLongScore.ONE_SOFT,
-                        Customer::getDistanceToDepot)
+                        Customer::getOptimalValueToDepot)
                 .asConstraint("distanceFromLastCustomerToDepot");
     }
     

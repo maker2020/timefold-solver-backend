@@ -19,7 +19,6 @@ import org.optaplanner.core.config.solver.termination.TerminationConfig;
 import org.springframework.stereotype.Service;
 
 import com.keyvalues.optaplanner.common.Result;
-import com.keyvalues.optaplanner.common.enums.TacticsEnum;
 import com.keyvalues.optaplanner.constant.RedisConstant;
 import com.keyvalues.optaplanner.geo.Point;
 import com.keyvalues.optaplanner.maprouting.api.BaiduDirection;
@@ -55,7 +54,7 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         // 构建问题
         VisitorRoutingSolution initializedSolution = generateSolution(problemInputVo);
         // 构建P2P制定策略的优化值，Redis保存
-        createOptimalValueMap(initializedSolution,TacticsEnum.TWO);
+        createOptimalValueMap(initializedSolution);
         // 全局保存
         // VisitorRoutingController.p2pOptimalValueMap.putAll(optimalValMap);     
         // 写入可选配置、初始化相关管理对象
@@ -170,18 +169,14 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     private VisitorRoutingSolution generateSolution(ProblemInputVo problemInputVo){
         VisitorRoutingSolution solution=new VisitorRoutingSolution();
         
-        // 点位和客户初始化：id由后端生成
+        // 客户和点位初始化：id由后端生成
         long id=0L;
-        List<Location> locations = problemInputVo.getLocationList();
-        List<Customer> customers = new ArrayList<>();
-        for(Location location:locations){
-            location.setId(id);
-            // 客户
-            Customer customer=new Customer(id,location);
-            customers.add(customer);
+        List<Customer> customers = problemInputVo.getCustomers();
+        for(Customer customer:customers){
+            customer.setId(id);
+            customer.getLocation().setId(id);
             id++;
         }
-        solution.setLocationList(locations);
         solution.setCustomerList(customers);
 
         // 访问者/车辆 、出发点/基地（及其点位） 的设置
@@ -203,17 +198,17 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     }
 
     /**
-     * 根据问题和策略生成对应策略最优值的p2p映射图
+     * 根据问题和策略生成对应策略最优值的p2p映射图，并存入redis缓存
      * @param initializedSolution 初始化了的solution
      * @param tactics API策略选项
-     * @return ()->():xx => Long
+     * @return
      */
-    private void createOptimalValueMap(VisitorRoutingSolution initializedSolution,TacticsEnum tactics){
+    private void createOptimalValueMap(VisitorRoutingSolution initializedSolution){
         class Combine{
             /**
              * 不会改变元素的组合
              */
-            static void dfs(List<Point> elements, int choose, int start, List<Point> current, List<List<Point>> combinationCollection) {
+            static <T> void dfs(List<T> elements, int choose, int start, List<T> current, List<List<T>> combinationCollection) {
                 if (choose == 0) {
                     combinationCollection.add(new ArrayList<>(current));
                     return;
@@ -225,19 +220,21 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
                 }
             }
         }
-        // 客户点之间组合
-        List<Location> locationList = initializedSolution.getLocationList();
-        List<Point> locationToPoints = locationList.stream().map(r->r.getPoint()).toList();
-        List<List<Point>> combinationList = new ArrayList<>();
-        Combine.dfs(locationToPoints, 2, 0, new ArrayList<>(), combinationList);
+        // 客户之间组合
+        List<Customer> customerList = initializedSolution.getCustomerList();
+        List<List<Customer>> combinationList = new ArrayList<>();
+        Combine.dfs(customerList, 2, 0, new ArrayList<>(), combinationList);
+
         // 各起点->各客户点的组合 （如果考虑回去的终点要做新组合）
-        List<List<Point>> combinationList2 = new ArrayList<>();
+        // 将起点拟作一个Customer统一放一个List<List>
+        List<List<Customer>> combinationList2 = new ArrayList<>();
         List<VisitorBase> visitorBases=initializedSolution.getVisitorBases();
         List<Point> points=visitorBases.stream().map(r->r.getLocation().getPoint()).toList();
         for(Point origin:points){
-            List<Point> item=new ArrayList<>();
-            item.add(origin);
-            for(Point to:locationToPoints){
+            List<Customer> item=new ArrayList<>();
+            Customer cOirgin=new Customer(-1, new Location(-1, origin));
+            item.add(cOirgin);
+            for(Customer to:customerList){
                 item.add(to);
             }
             combinationList2.add(item);
@@ -245,28 +242,32 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         combinationList.addAll(combinationList2);
 
         // 构建策略最优值p2p图
-        for (List<Point> point : combinationList) {
-            Point a=point.get(0);
-            Point b=point.get(1);
+        // 约束中算值是每个客户的上一个，因此当遇到a->b，则表示客户b的Tactisc/策略
+        // base拟为customer的默认距离最短（不参与计算无影响）
+        for (List<Customer> cc : combinationList) {
+            Customer a=cc.get(0);
+            Customer b=cc.get(1);
+            Point p0=a.getLocation().getPoint();
+            Point p1=b.getLocation().getPoint();
             StringBuilder sb=new StringBuilder();
             // a->b
-            String key0=sb.append(a.toString()).append("->").append(b.toString()).append(":").append(tactics).toString();
+            String key0=sb.append(p0.toString()).append("->").append(p1.toString()).append(":").append(b.getTactics()).toString();
             long optimalValue0;
             // 先判断缓存
             if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key0)){
                 optimalValue0=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key0);
             }else{
-                optimalValue0 = baiduDirection.calculateOptimalValue(a, b, tactics);
+                optimalValue0 = baiduDirection.calculateOptimalValue(p0, p1, b.getTactics());
                 redisUtil.hset(RedisConstant.p2pOptimalValueMap, key0, optimalValue0, 1800);
             }
             sb.setLength(0);
             // b->a
-            String key1=sb.append(b.toString()).append("->").append(a.toString()).append(":").append(tactics).toString();
+            String key1=sb.append(p1.toString()).append("->").append(p0.toString()).append(":").append(a.getTactics()).toString();
             long optimalValue1;
             if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key1)){
                 optimalValue1=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key1);
             }else{
-                optimalValue1 = baiduDirection.calculateOptimalValue(b, a, tactics);
+                optimalValue1 = baiduDirection.calculateOptimalValue(p1, p0, a.getTactics());
                 redisUtil.hset(RedisConstant.p2pOptimalValueMap, key1, optimalValue1, 1800);
             }
         }

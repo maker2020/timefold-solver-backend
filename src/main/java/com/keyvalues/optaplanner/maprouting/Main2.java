@@ -4,6 +4,7 @@
 // import java.util.HashMap;
 // import java.util.List;
 // import java.util.Map;
+// import java.util.concurrent.ConcurrentHashMap;
 
 // import org.optaplanner.core.api.solver.Solver;
 // import org.optaplanner.core.api.solver.SolverFactory;
@@ -11,7 +12,6 @@
 // import com.fasterxml.jackson.core.JsonProcessingException;
 // import com.fasterxml.jackson.databind.ObjectMapper;
 // import com.keyvalues.optaplanner.geo.Point;
-// import com.keyvalues.optaplanner.maprouting.controller.VisitorRoutingController;
 // import com.keyvalues.optaplanner.maprouting.domain.Customer;
 // import com.keyvalues.optaplanner.maprouting.domain.Location;
 // import com.keyvalues.optaplanner.maprouting.domain.Visitor;
@@ -22,6 +22,8 @@
 //  * 验证成功，将(20,0)换成(18,0)，方案变为第二辆车直接去(18,0)。
 //  */
 // public class Main2 {
+
+//     public static final Map<String,Long> p2pOptimalValueMap=new ConcurrentHashMap<>();
     
 //     public static void main(String[] args) throws JsonProcessingException {
 //         String configPath="optaplanner/visitorRoutingSolverConfig.xml";
@@ -38,7 +40,7 @@
 //         locationList.add(new Location(id__++,new Point(18, 0)));
 //         locationList.add(new Location(id__++,new Point(20, 20)));
 //         // 所有点位
-//         problem.setLocationList(locationList);
+//         // problem.setLocationList(locationList);
 //         // 客户列表(同点位列表)
 //         List<Customer> customers=new ArrayList<>();
 //         Long id_=0L;
@@ -69,7 +71,7 @@
 //         // 再移除
 //         locationList.remove(locationList.size()-1);
 //         Map<String,Long> map = createOptimalValueMapMap(combinePoint);
-//         VisitorRoutingController.p2pOptimalValueMap.putAll(map);
+//         Main2.p2pOptimalValueMap.putAll(map);
 //         VisitorRoutingSolution solution = solver.solve(problem);
         
 //         ObjectMapper objectMapper=new ObjectMapper();

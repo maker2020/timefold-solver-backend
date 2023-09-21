@@ -14,6 +14,7 @@ import com.keyvalues.optaplanner.constant.RedisConstant;
 import com.keyvalues.optaplanner.geo.Point;
 import com.keyvalues.optaplanner.maprouting.service.impl.VisitorRoutingServiceImpl;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,13 +30,20 @@ import lombok.ToString;
 @JsonIdentityInfo(generator = JacksonUniqueIdGenerator.class)
 public class Customer extends AbstractPersistable{
     
+    @Schema(description = "位置")
     protected Location location;
 
+    @Schema(description = "地图API规划策略(上一个点到这里)")
+    protected TacticsEnum tactics=TacticsEnum.TWO;
+
     // 影子变量：按关联列表左右生成
+    @Schema(hidden = true)
     @InverseRelationShadowVariable(sourceVariableName = "customers")
     protected Visitor visitor;
+    @Schema(hidden = true)
     @PreviousElementShadowVariable(sourceVariableName = "customers")
     protected Customer previousCustomer;
+    @Schema(hidden = true)
     @NextElementShadowVariable(sourceVariableName = "customers")
     protected Customer nextCustomer;
 
@@ -49,7 +57,7 @@ public class Customer extends AbstractPersistable{
      * @return
      */
     @JsonIgnore
-    public long getDistanceFromPreviousStandstill(){
+    public long getOptimalValueFromPreviousStandstill(){
         if(visitor==null){
             throw new IllegalStateException(
                     "This method must not be called when the shadow variables are not initialized yet.");
@@ -63,9 +71,12 @@ public class Customer extends AbstractPersistable{
         }else{
             previousPoint = previousCustomer.location.getPoint();
         }
-        String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).append(":").append(TacticsEnum.TWO).toString();
+        String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).append(":").append(tactics).toString();
         Object optimalValue = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+
+        // String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).toString();
         // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
+        
         return optimalValue==null?0:(long)optimalValue;
     }
 
@@ -74,7 +85,7 @@ public class Customer extends AbstractPersistable{
      * @return
      */
     @JsonIgnore
-    public long getDistanceToDepot(){
+    public long getOptimalValueToDepot(){
         StringBuilder sb=new StringBuilder();
         Point basePoint=visitor.getBase().getLocation().getPoint();
         String key=sb.append(location.getPoint().toString()).append("->").append(basePoint.toString()).toString();
