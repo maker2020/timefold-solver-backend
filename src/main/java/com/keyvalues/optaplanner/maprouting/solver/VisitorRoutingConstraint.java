@@ -12,15 +12,15 @@ public class VisitorRoutingConstraint implements ConstraintProvider{
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-            distanceToPreviousStandstill(constraintFactory),
-            // distanceFromLastCustomerToDepot(constraintFactory),
+            optimalValueToPreviousStandstill(constraintFactory),
+            // optimalValueFromLastCustomerToDepot(constraintFactory),
         };
     }
 
     /**
-     * 链式计算总路径。 （上一个为null则算到起点到距离。）
+     * 链式计算总策略值(路径)。 （上一个为null则算到起点的距离。）
      */
-    protected Constraint distanceToPreviousStandstill(ConstraintFactory factory) {
+    protected Constraint optimalValueToPreviousStandstill(ConstraintFactory factory) {
         return factory.forEach(Customer.class)
                 .filter(customer -> customer.getVisitor() != null)
                 .penalizeLong(HardSoftLongScore.ONE_SOFT,
@@ -29,9 +29,9 @@ public class VisitorRoutingConstraint implements ConstraintProvider{
     }
 
     /**
-     * 单独计算的：最后一个客户点到原点的距离
+     * 单独计算的：最后一个客户点到原点的策略值(距离)
      */
-    protected Constraint distanceFromLastCustomerToDepot(ConstraintFactory factory) {
+    protected Constraint optimalValueFromLastCustomerToDepot(ConstraintFactory factory) {
         return factory.forEach(Customer.class)
                 .filter(customer -> customer.getVisitor() != null && customer.getNextCustomer() == null)
                 .penalizeLong(HardSoftLongScore.ONE_SOFT,

@@ -1,5 +1,6 @@
 package com.keyvalues.optaplanner.maprouting.controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -68,6 +69,13 @@ public class VisitorRoutingController {
     @Operation(summary = "立即终止问题并获取结果")
     public Result<?> terminalProblem(@RequestParam String problemID){
         Map<String,Object> data = visitorRoutingService.terminalProblem(UUID.fromString(problemID));
+        return Result.OK(data);
+    }
+
+    @GetMapping("/listProblem")
+    @Operation(summary = "列出问题")
+    public Result<?> listProblem(){
+        List<Map<String,Object>> data=visitorRoutingService.listProblem();
         return Result.OK(data);
     }
 
