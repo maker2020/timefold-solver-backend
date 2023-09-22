@@ -6,12 +6,12 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>com.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution</solutionClass>
-  <entityClass>com.keyvalues.optaplanner.maprouting.domain.Visitor</entityClass>
-  <entityClass>com.keyvalues.optaplanner.maprouting.domain.Customer</entityClass>
+  <solutionClass>cn.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution</solutionClass>
+  <entityClass>cn.keyvalues.optaplanner.maprouting.domain.Visitor</entityClass>
+  <entityClass>cn.keyvalues.optaplanner.maprouting.domain.Customer</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>com.keyvalues.optaplanner.maprouting.solver.VisitorRoutingConstraint</constraintProviderClass>
+    <constraintProviderClass>cn.keyvalues.optaplanner.maprouting.solver.VisitorRoutingConstraint</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
