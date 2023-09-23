@@ -18,6 +18,7 @@ import cn.keyvalues.optaplanner.maprouting.controller.vo.ProblemInputVo;
 import cn.keyvalues.optaplanner.maprouting.service.VisitorRoutingService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,10 +48,10 @@ public class VisitorRoutingController {
 
     @GetMapping("/solveAsync/pollUpdate")
     @Operation(summary = "获取/消费solveAsync结果队列")
-    public Result<?> solveAysncPollUpdate(@RequestParam String problemID){
+    public Result<?> solveAysncPollUpdate(@RequestParam String problemID,@Parameter(description = "轮询间隔时间(单位毫秒)") @RequestParam long intervalTime){
         Result<?> result;
         try{
-            return Result.OK(visitorRoutingService.pollUpdate(UUID.fromString(problemID)));
+            return Result.OK(visitorRoutingService.pollUpdate(UUID.fromString(problemID),intervalTime));
         }catch(Exception e){
             log.error(e.getMessage());
             result=Result.failed(CommonConstant.FAILED,e.getMessage());

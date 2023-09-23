@@ -8,6 +8,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.SolverJob;
@@ -17,6 +20,10 @@ import org.optaplanner.core.config.solver.SolverConfig;
 import org.optaplanner.core.config.solver.SolverManagerConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
 import org.springframework.stereotype.Service;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
@@ -28,10 +35,14 @@ import cn.keyvalues.optaplanner.maprouting.domain.Location;
 import cn.keyvalues.optaplanner.maprouting.domain.Visitor;
 import cn.keyvalues.optaplanner.maprouting.domain.VisitorBase;
 import cn.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution;
+import cn.keyvalues.optaplanner.maprouting.domain.entity.SolutionEntity;
+import cn.keyvalues.optaplanner.maprouting.service.SolutionService;
 import cn.keyvalues.optaplanner.maprouting.service.VisitorRoutingService;
 import cn.keyvalues.optaplanner.utils.RedisUtil;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class VisitorRoutingServiceImpl implements VisitorRoutingService{
 
     public static RedisUtil redisUtil;
@@ -39,17 +50,23 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     private Map<UUID,SolverJob<VisitorRoutingSolution,UUID>> solverJobMap;
     private final SolverConfig solverConfig;
     private final BaiduDirection baiduDirection;
+    private SolutionService solutionService;
 
+    // 也可以考虑阻塞队列，浏览器递归请求
+    //
     private Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueue=new ConcurrentHashMap<>(); 
 
-    public VisitorRoutingServiceImpl(SolverManager<VisitorRoutingSolution, UUID> solverManager,SolverConfig solverConfig,BaiduDirection baiduDirection,RedisUtil redisUtil) {
+    public VisitorRoutingServiceImpl(SolverManager<VisitorRoutingSolution, UUID> solverManager,SolverConfig solverConfig
+            ,BaiduDirection baiduDirection,RedisUtil redisUtil,SolutionService solutionService) {
         solverJobMap=new ConcurrentHashMap<>();
         this.solverConfig = solverConfig;
         this.baiduDirection = baiduDirection;
         VisitorRoutingServiceImpl.redisUtil=redisUtil;
+        this.solutionService=solutionService;
     }
 
     @Override
+    // 事务
     public Result<?> solveAsync(ProblemInputVo problemInputVo) {
         // 构建问题
         VisitorRoutingSolution initializedSolution = generateSolution(problemInputVo);
@@ -64,12 +81,49 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         ConcurrentLinkedDeque<Map<String,Object>> syncQueue=new ConcurrentLinkedDeque<Map<String,Object>>();
         UUID problemID=UUID.randomUUID();
         solverSolutionQueue.put(problemID, syncQueue);
+        // 在求解开始前做持久化。
+        SolutionEntity solutionEntity=new SolutionEntity();
+        ObjectMapper objectMapper=new ObjectMapper();
+        try {
+            solutionEntity.setCustomersJson(objectMapper.writeValueAsString(initializedSolution.getCustomerList()));
+            solutionEntity.setProblemId(problemID.toString());
+            solutionEntity.setProblemName(problemInputVo.getProblemName());
+            solutionEntity.setTimeLimit(problemInputVo.getTimeLimit());
+            solutionEntity.setVisitorsJson(objectMapper.writeValueAsString(initializedSolution.getVisitorList()));
+            solutionService.save(solutionEntity);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            return Result.failed("问题序列化失败，请检查数据格式");
+        }
         SolverJob<VisitorRoutingSolution,UUID> solverJob=solverManager.solveAndListen(problemID,r->{return initializedSolution;},(update)->{
             Map<String,Object> newData=new HashMap<>();
-            newData.put("status", solverManager.getSolverStatus(problemID));
+            SolverStatus status = solverManager.getSolverStatus(problemID);
+            newData.put("status", status);
             newData.put("updatedSolution", update);
             syncQueue.add(newData);
+            
+            // 使数据库保持最新数据状态
+            SolutionEntity entity = solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+            ObjectMapper om=new ObjectMapper();
+            try {
+                entity.setVisitorsJson(om.writeValueAsString(update.getVisitorList()));
+                entity.setStatus(status.toString());
+                solutionService.saveOrUpdate(entity);
+            } catch (JsonProcessingException e) {
+                log.error("序列化失败,无法更新数据库solution"+e.getMessage());
+            }
         });
+        // 开启线程阻塞获取最后结果和清空管理对象。用于更新数据库（solveListen回调没有最后的状态）
+        new Thread(()->{
+            try {
+                solverJob.getFinalBestSolution(); // 不接收
+            } catch (Exception e) {
+                // ignore
+            }
+            SolutionEntity solution=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+            solution.setStatus(SolverStatus.NOT_SOLVING.toString());
+            solutionService.saveOrUpdate(solution);
+        }).start();
         // 可跟踪问题状态、最终解
         solverJobMap.put(problemID, solverJob);
 
@@ -79,23 +133,35 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     }
 
     @Override
-    public Map<String, Object> pollUpdate(UUID problemID) throws Exception {
+    public Map<String, Object> pollUpdate(UUID problemID,long intervalTime) throws Exception {
+        // 根据轮询间隔时间，如果problemID已经发生请求，设定延迟3s没第二次请求就判定断开/超时，清空资源。
+        // redis记录时间戳，定时器来完成清除资源
+        // 允许请求正常间隔 仍延迟5s
+        long allowDelay=intervalTime+5000;
+        ScheduledExecutorService executorService=Executors.newSingleThreadScheduledExecutor();
+        redisUtil.hset(RedisConstant.problemPollTimeMap, problemID.toString(), System.currentTimeMillis(), 30);
+        executorService.scheduleWithFixedDelay(()->{
+            Object val=redisUtil.hget(RedisConstant.problemPollTimeMap, problemID.toString());
+            long lastRequestTimeMillis = val==null?0:(long)val;
+            long currentTimeMillis = System.currentTimeMillis();
+            if(currentTimeMillis-lastRequestTimeMillis>allowDelay){
+                // 清空管理对象
+                solverSolutionQueue.remove(problemID);
+                solverJobMap.remove(problemID);
+            }
+        }, allowDelay, allowDelay, TimeUnit.MILLISECONDS);
+
         Map<String,Object> data=new HashMap<>();
         ConcurrentLinkedDeque<Map<String,Object>> solveQueue=solverSolutionQueue.get(problemID);
-        // 问题不存在
-        if(solveQueue==null) return null;
-        Map<String,Object> problemData=solveQueue.poll();
         SolverJob<VisitorRoutingSolution,UUID> solverJob=solverJobMap.get(problemID);
-        if(problemData==null && solverJob.getSolverStatus().equals(SolverStatus.NOT_SOLVING)){
+        Map<String,Object> problemData=solveQueue==null?null:solveQueue.poll();
+        SolverStatus solverStatus = solverJob==null?SolverStatus.NOT_SOLVING:solverJob.getSolverStatus();
+        if(problemData==null && SolverStatus.NOT_SOLVING.equals(solverStatus)){
             data.put("status", SolverStatus.NOT_SOLVING);
-
-            // 清空该问题对应的资源 (该更新接口已经被浏览器最后一次拿到结果，说明客户端已看到，可以释放)
-            solverSolutionQueue.remove(problemID);
-            solverJobMap.remove(problemID);
             return data;
         }
         // 说明暂时没更好的结果,但还在计算
-        if(problemData==null && SolverStatus.SOLVING_ACTIVE.equals(solverJob.getSolverStatus())){
+        if(problemData==null && SolverStatus.SOLVING_ACTIVE.equals(solverStatus)){
             data.put("status", SolverStatus.SOLVING_ACTIVE);
             return data;
         }
@@ -169,7 +235,7 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     private VisitorRoutingSolution generateSolution(ProblemInputVo problemInputVo){
         VisitorRoutingSolution solution=new VisitorRoutingSolution();
         
-        // 客户和点位初始化：id由后端生成
+        // 客户和点位初始化：id由后端生成 (用于jackson序列化作为标识)
         long id=0L;
         List<Customer> customers = problemInputVo.getCustomers();
         for(Customer customer:customers){
@@ -193,7 +259,6 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
             id_++;
         }
         solution.setVisitorList(visitors);
-        solution.setVisitorBases(bases);
         return solution;
     }
 
@@ -228,8 +293,7 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         // 各起点->各客户点的组合 （如果考虑回去的终点要做新组合）
         // 将起点拟作一个Customer统一放一个List<List>
         List<List<Customer>> combinationList2 = new ArrayList<>();
-        List<VisitorBase> visitorBases=initializedSolution.getVisitorBases();
-        List<Point> points=visitorBases.stream().map(r->r.getLocation().getPoint()).toList();
+        List<Point> points=initializedSolution.getVisitorList().stream().map(v->v.getBase().getLocation().getPoint()).toList();
         for(Point origin:points){
             List<Customer> item=new ArrayList<>();
             Customer cOirgin=new Customer(-1, new Location(-1, origin));

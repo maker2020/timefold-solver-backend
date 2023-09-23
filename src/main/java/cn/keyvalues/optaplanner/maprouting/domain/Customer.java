@@ -73,11 +73,9 @@ public class Customer extends AbstractPersistable{
         }
         String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).append(":").append(tactics).toString();
         Object optimalValue = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
-
-        // String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).toString();
-        // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
-        
         return optimalValue==null?0:(long)optimalValue;
+        // String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).toString();
+        // return Main2.p2pOptimalValueMap.getOrDefault(key,0L);
     }
 
     /**

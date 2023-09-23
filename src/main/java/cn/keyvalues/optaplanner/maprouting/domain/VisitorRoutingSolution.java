@@ -32,8 +32,8 @@ public class VisitorRoutingSolution extends AbstractPersistable{
     // @ProblemFactCollectionProperty
     // protected List<Location> locationList;
 
-    @ProblemFactCollectionProperty
-    protected List<VisitorBase> visitorBases;
+    // @ProblemFactCollectionProperty
+    // protected List<VisitorBase> visitorBases;
 
     @PlanningEntityCollectionProperty
     protected List<Visitor> visitorList;

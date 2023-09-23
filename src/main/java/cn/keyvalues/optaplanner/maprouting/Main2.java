@@ -1,4 +1,3 @@
-package cn.keyvalues.optaplanner.maprouting;
 // package cn.keyvalues.optaplanner.maprouting;
 
 // import java.util.ArrayList;
@@ -53,21 +52,22 @@ package cn.keyvalues.optaplanner.maprouting;
 //         }
 //         problem.setCustomerList(customers);
 //         // 起点（1个）
-//         List<VisitorBase> visitorBases=new ArrayList<>(){{
-//             // locationList.get(0))
-//             // 引用还是new?都无所谓
-//             add(new VisitorBase(0,new Location(99,new Point(0, 0))));
-//         }};
-//         problem.setVisitorBases(visitorBases);
+//         // List<VisitorBase> visitorBases=new ArrayList<>(){{
+//         //     // locationList.get(0))
+//         //     // 引用还是new?都无所谓
+//         //     add(new VisitorBase(0,new Location(99,new Point(0, 0))));
+//         // }};
+//         // problem.setVisitorBases(visitorBases);
+//         VisitorBase base = new VisitorBase(0,new Location(99,new Point(0, 0)));
 //         // 访问者列表(1,2位)
 //         Long id=0L;
 //         List<Visitor> visitors=new ArrayList<>();
-//         visitors.add(new Visitor(id++,visitorBases.get(0)));
-//         visitors.add(new Visitor(id++,visitorBases.get(0)));
+//         visitors.add(new Visitor(id++,base));
+//         visitors.add(new Visitor(id++,base));
 //         problem.setVisitorList(visitors);
 
 //         // 生成p2p优化图还需要把基地算进去
-//         locationList.add(visitorBases.get(0).getLocation());
+//         locationList.add(base.getLocation());
 //         List<List<Point>> combinePoint = combinePoint(locationList.stream().map((o)->o.getPoint()).toList(), 2);
 //         // 再移除
 //         locationList.remove(locationList.size()-1);

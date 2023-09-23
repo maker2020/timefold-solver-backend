@@ -19,9 +19,10 @@ public interface VisitorRoutingService {
      * <p>返回问题通过solveAsync求解过程中某个阶段的结果</p>
      * <p>返回的对象必须用ObjectMapper来序列化，其他JSON不行</p>
      * @param problemID
+     * @param intervalTime 轮询间隔时间(单位ms)
      * @return
      */
-    Map<String,Object> pollUpdate(UUID problemID) throws Exception;
+    Map<String,Object> pollUpdate(UUID problemID,long intervalTime) throws Exception;
 
     /**
      * 终止及移除问题

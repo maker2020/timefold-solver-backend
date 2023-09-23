@@ -1,5 +1,6 @@
 package cn.keyvalues.optaplanner;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -12,11 +13,12 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @SpringBootApplication
+@MapperScan("cn.keyvalues.optaplanner.**.mapper*")
 public class OptaPlannerApplication {
     
     public static void main(String[] args) {
         SpringApplication.run(OptaPlannerApplication.class, args);
-        log.info("DEFAULT swagger-ui URL-------------http://localhost:8080/swagger-ui.html");
+        log.info("DEFAULT swagger-ui URL-------------http://localhost:8080/planner/swagger-ui.html");
     }
 
 }
