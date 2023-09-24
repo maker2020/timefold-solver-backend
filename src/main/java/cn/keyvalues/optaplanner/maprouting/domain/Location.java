@@ -1,8 +1,6 @@
 package cn.keyvalues.optaplanner.maprouting.domain;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.common.persistence.jackson.JacksonUniqueIdGenerator;
 import cn.keyvalues.optaplanner.geo.Point;
 
 import lombok.Getter;
@@ -13,7 +11,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @Getter
-@JsonIdentityInfo(generator = JacksonUniqueIdGenerator.class)
 @ToString
 public class Location extends AbstractPersistable{
     

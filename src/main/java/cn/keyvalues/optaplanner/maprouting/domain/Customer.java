@@ -5,11 +5,10 @@ import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
 import org.optaplanner.core.api.domain.variable.NextElementShadowVariable;
 import org.optaplanner.core.api.domain.variable.PreviousElementShadowVariable;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.alibaba.fastjson.annotation.JSONField;
+
 import cn.keyvalues.optaplanner.common.enums.TacticsEnum;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.common.persistence.jackson.JacksonUniqueIdGenerator;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
 import cn.keyvalues.optaplanner.geo.Point;
 import cn.keyvalues.optaplanner.maprouting.service.impl.VisitorRoutingServiceImpl;
@@ -27,7 +26,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@JsonIdentityInfo(generator = JacksonUniqueIdGenerator.class)
 public class Customer extends AbstractPersistable{
     
     @Schema(description = "位置")
@@ -56,7 +54,7 @@ public class Customer extends AbstractPersistable{
      * 上一个点到这里的距离
      * @return
      */
-    @JsonIgnore
+    @JSONField(serialize = false)
     public long getOptimalValueFromPreviousStandstill(){
         if(visitor==null){
             throw new IllegalStateException(
@@ -82,7 +80,7 @@ public class Customer extends AbstractPersistable{
      * 这里到起点到距离
      * @return
      */
-    @JsonIgnore
+    @JSONField(serialize = false)
     public long getOptimalValueToDepot(){
         StringBuilder sb=new StringBuilder();
         Point basePoint=visitor.getBase().getLocation().getPoint();

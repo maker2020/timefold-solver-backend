@@ -6,9 +6,7 @@ import java.util.List;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningListVariable;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.common.persistence.jackson.JacksonUniqueIdGenerator;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -23,7 +21,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@JsonIdentityInfo(generator = JacksonUniqueIdGenerator.class)
 public class Visitor extends AbstractPersistable{
 
     private VisitorBase base;

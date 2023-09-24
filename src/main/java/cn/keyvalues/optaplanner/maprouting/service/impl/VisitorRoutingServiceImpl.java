@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -22,8 +21,6 @@ import org.optaplanner.core.config.solver.termination.TerminationConfig;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
@@ -33,16 +30,14 @@ import cn.keyvalues.optaplanner.maprouting.controller.vo.ProblemInputVo;
 import cn.keyvalues.optaplanner.maprouting.domain.Customer;
 import cn.keyvalues.optaplanner.maprouting.domain.Location;
 import cn.keyvalues.optaplanner.maprouting.domain.Visitor;
-import cn.keyvalues.optaplanner.maprouting.domain.VisitorBase;
 import cn.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution;
 import cn.keyvalues.optaplanner.maprouting.domain.entity.SolutionEntity;
 import cn.keyvalues.optaplanner.maprouting.service.SolutionService;
 import cn.keyvalues.optaplanner.maprouting.service.VisitorRoutingService;
+import cn.keyvalues.optaplanner.maprouting.utils.CircularRefUtil;
 import cn.keyvalues.optaplanner.utils.RedisUtil;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 public class VisitorRoutingServiceImpl implements VisitorRoutingService{
 
     public static RedisUtil redisUtil;
@@ -83,18 +78,13 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         solverSolutionQueue.put(problemID, syncQueue);
         // 在求解开始前做持久化。
         SolutionEntity solutionEntity=new SolutionEntity();
-        ObjectMapper objectMapper=new ObjectMapper();
-        try {
-            solutionEntity.setCustomersJson(objectMapper.writeValueAsString(initializedSolution.getCustomerList()));
-            solutionEntity.setProblemId(problemID.toString());
-            solutionEntity.setProblemName(problemInputVo.getProblemName());
-            solutionEntity.setTimeLimit(problemInputVo.getTimeLimit());
-            solutionEntity.setVisitorsJson(objectMapper.writeValueAsString(initializedSolution.getVisitorList()));
-            solutionService.save(solutionEntity);
-        } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            return Result.failed("问题序列化失败，请检查数据格式");
-        }
+        solutionEntity.setCustomersJson(initializedSolution.getCustomerList());
+        solutionEntity.setProblemId(problemID.toString());
+        solutionEntity.setProblemName(problemInputVo.getProblemName());
+        solutionEntity.setTimeLimit(problemInputVo.getTimeLimit());
+        solutionEntity.setVisitorsJson(initializedSolution.getVisitorList());
+        solutionService.save(solutionEntity);
+
         SolverJob<VisitorRoutingSolution,UUID> solverJob=solverManager.solveAndListen(problemID,r->{return initializedSolution;},(update)->{
             Map<String,Object> newData=new HashMap<>();
             SolverStatus status = solverManager.getSolverStatus(problemID);
@@ -104,14 +94,9 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
             
             // 使数据库保持最新数据状态
             SolutionEntity entity = solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
-            ObjectMapper om=new ObjectMapper();
-            try {
-                entity.setVisitorsJson(om.writeValueAsString(update.getVisitorList()));
-                entity.setStatus(status.toString());
-                solutionService.saveOrUpdate(entity);
-            } catch (JsonProcessingException e) {
-                log.error("序列化失败,无法更新数据库solution"+e.getMessage());
-            }
+            entity.setVisitorsJson(update.getVisitorList());
+            entity.setStatus(status.toString());
+            solutionService.saveOrUpdate(entity);
         });
         // 开启线程阻塞获取最后结果和清空管理对象。用于更新数据库（solveListen回调没有最后的状态）
         new Thread(()->{
@@ -168,21 +153,9 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         VisitorRoutingSolution solution=(VisitorRoutingSolution)problemData.get("updatedSolution");
         SolverStatus status=(SolverStatus)problemData.get("status");
 
-        data.put("solution", solution.getNoEachReferenceSolution(null));
+        data.put("solution", CircularRefUtil.getNoEachReferenceSolution(solution,null));
         data.put("status", status);
         return data;
-    }
-
-    @Override
-    public void removeProblem(UUID problemID) {
-        // 判断问题存在就终止
-        if(solverJobMap.containsKey(problemID)){
-            SolverJob<VisitorRoutingSolution,UUID> solverJob = solverJobMap.get(problemID);
-            solverJob.terminateEarly();
-        }
-        // 从管理对象中移除
-        solverJobMap.remove(problemID);
-        solverSolutionQueue.remove(problemID);
     }
 
     @Override
@@ -206,28 +179,24 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         // solverJobMap.remove(problemID);
         // solverSolutionQueue.remove(problemID);
         result=new HashMap<>();
-        result.put("solution", solution.getNoEachReferenceSolution(null));
+        result.put("solution", CircularRefUtil.getNoEachReferenceSolution(solution,null));
         return result;
     }
 
     @Override
     public List<Map<String, Object>> listProblem() {
         List<Map<String,Object>> problemList=new ArrayList<>();
-        Set<UUID> problemIDSet = solverJobMap.keySet();
-        for(UUID problemID:problemIDSet){
-            SolverJob<VisitorRoutingSolution,UUID> solverJob=solverJobMap.get(problemID);
-            Map<String,Object> solutionObj=new HashMap<>();
-            solutionObj.put("problemID", problemID);
-
-            SolverStatus solverStatus=solverJob.getSolverStatus();
-            solutionObj.put("status", solverStatus);
-
-            ConcurrentLinkedDeque<Map<String,Object>> solutionQueue = solverSolutionQueue.get(problemID);
-            Map<String,Object> latestSolution = solutionQueue.peekLast();
-            VisitorRoutingSolution solution=latestSolution==null?null:(VisitorRoutingSolution)latestSolution.get("updatedSolution");
-            solutionObj.put("suolution", solution.getNoEachReferenceSolution(null));
-
-            problemList.add(solutionObj);
+        List<SolutionEntity> list = solutionService.list();
+        for(SolutionEntity entity:list){
+            Map<String,Object> solution=new HashMap<>();
+            solution.put("problemID", entity.getProblemId());
+            solution.put("problemName", entity.getProblemName());
+            solution.put("score", entity.getScore());
+            solution.put("status", entity.getStatus());
+            solution.put("timeLimit", entity.getTimeLimit());
+            solution.put("customers", CircularRefUtil.getNoEachReferenceCustomers(entity.getCustomersJson()));
+            solution.put("visitors", CircularRefUtil.getNoEachReferenceVisitors(entity.getVisitorsJson()));
+            problemList.add(solution);
         }
         return problemList;
     }
@@ -235,28 +204,19 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     private VisitorRoutingSolution generateSolution(ProblemInputVo problemInputVo){
         VisitorRoutingSolution solution=new VisitorRoutingSolution();
         
-        // 客户和点位初始化：id由后端生成 (用于jackson序列化作为标识)
+        // 客户和点位初始化：id由后端生成(只有规划实体需要设id)
         long id=0L;
         List<Customer> customers = problemInputVo.getCustomers();
         for(Customer customer:customers){
-            customer.setId(id);
-            customer.getLocation().setId(id);
-            id++;
+            customer.setId(id++);
         }
         solution.setCustomerList(customers);
 
         // 访问者/车辆 、出发点/基地（及其点位） 的设置
         long id_=0L;
         List<Visitor> visitors=problemInputVo.getVisitors();
-        List<VisitorBase> bases=new ArrayList<>();
         for(Visitor visitor:visitors){
-            VisitorBase base = visitor.getBase();
-            Location baseLocation=base.getLocation();
-            base.setId(id_);
-            baseLocation.setId(id_);
-            visitor.setId(id_);
-            bases.add(base);
-            id_++;
+            visitor.setId(id_++);
         }
         solution.setVisitorList(visitors);
         return solution;

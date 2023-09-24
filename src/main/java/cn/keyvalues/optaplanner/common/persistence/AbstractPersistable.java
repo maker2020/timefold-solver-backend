@@ -7,7 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public abstract class AbstractPersistable {
 
     @Schema(hidden = true)
-    protected Long id;
+    // 用Long，fastjson拆箱会报错
+    protected long id;
 
     protected AbstractPersistable() {
     }

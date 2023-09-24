@@ -59,13 +59,6 @@ public class VisitorRoutingController {
         return result;
     }
 
-    @GetMapping("/removeProblem")
-    @Operation(summary = "终止并移除问题")
-    public Result<?> removeProblem(@RequestParam String problemID){
-        visitorRoutingService.removeProblem(UUID.fromString(problemID));
-        return Result.OK();
-    }
-
     @GetMapping("/terminalProblem")
     @Operation(summary = "立即终止问题并获取结果")
     public Result<?> terminalProblem(@RequestParam String problemID){

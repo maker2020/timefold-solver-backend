@@ -25,12 +25,6 @@ public interface VisitorRoutingService {
     Map<String,Object> pollUpdate(UUID problemID,long intervalTime) throws Exception;
 
     /**
-     * 终止及移除问题
-     * @param problemID
-     */
-    void removeProblem(UUID problemID);
-
-    /**
      * 终止问题，并直接获取当前结果
      * @param problemID
      * @return

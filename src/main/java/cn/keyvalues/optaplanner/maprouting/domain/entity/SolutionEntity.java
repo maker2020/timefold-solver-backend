@@ -1,21 +1,32 @@
 package cn.keyvalues.optaplanner.maprouting.domain.entity;
 
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import cn.keyvalues.optaplanner.maprouting.domain.Customer;
+import cn.keyvalues.optaplanner.maprouting.domain.Visitor;
+import cn.keyvalues.optaplanner.mybatis.handler.CustomerListTypeHandler;
+import cn.keyvalues.optaplanner.mybatis.handler.VisitorListTypeHandler;
 import lombok.Data;
 
 @Data
-@TableName(value = "visitor_routing_solution")
+@TableName(value = "visitor_routing_solution",autoResultMap = true)
 public class SolutionEntity {
     @TableId(type = IdType.ASSIGN_ID)
-    @Schema(hidden = true)
     private Long id;
+
     private String problemName;
-    private String customersJson;
-    private String visitorsJson;
+
+    // typehandler处理json序列化
+    @TableField(typeHandler = CustomerListTypeHandler.class)
+    private List<Customer> customersJson;
+    @TableField(typeHandler = VisitorListTypeHandler.class)
+    private List<Visitor> visitorsJson;
+
     private Long timeLimit;
     private String score;
     private String problemId;
