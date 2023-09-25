@@ -175,9 +175,15 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         }
         Map<String,Object> lastSolution = solutionDeque.getLast();
         VisitorRoutingSolution solution=(VisitorRoutingSolution)lastSolution.get("updatedSolution");
-        // 拿到后不清除，用户通过专门清除接口来清除
-        // solverJobMap.remove(problemID);
-        // solverSolutionQueue.remove(problemID);
+        // 终止问题、更新至数据库并清除
+        SolutionEntity entity=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+        entity.setStatus(SolverStatus.NOT_SOLVING.toString());
+        entity.setVisitorsJson(solution.getVisitorList());
+        solutionService.saveOrUpdate(entity);
+
+        solverJobMap.remove(problemID);
+        solverSolutionQueue.remove(problemID);
+
         result=new HashMap<>();
         result.put("solution", CircularRefUtil.getNoEachReferenceSolution(solution,null));
         return result;

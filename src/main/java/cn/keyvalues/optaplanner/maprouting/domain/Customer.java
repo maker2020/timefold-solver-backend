@@ -40,9 +40,11 @@ public class Customer extends AbstractPersistable{
     protected Visitor visitor;
     @Schema(hidden = true)
     @PreviousElementShadowVariable(sourceVariableName = "customers")
+    @JSONField(serialize = false)
     protected Customer previousCustomer;
     @Schema(hidden = true)
     @NextElementShadowVariable(sourceVariableName = "customers")
+    @JSONField(serialize = false)
     protected Customer nextCustomer;
 
     public Customer(long id,Location location){
