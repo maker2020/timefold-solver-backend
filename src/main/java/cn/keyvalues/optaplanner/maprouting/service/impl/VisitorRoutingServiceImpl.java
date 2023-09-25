@@ -159,7 +159,7 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     }
 
     @Override
-    public Map<String, Object> terminalProblem(UUID problemID) {
+    public Map<String, Object> terminalProblem(UUID problemID,boolean save) {
         Map<String,Object> result=null;
         // 判断问题不存在就返回null
         if(!solverJobMap.containsKey(problemID)){
@@ -175,12 +175,15 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         }
         Map<String,Object> lastSolution = solutionDeque.getLast();
         VisitorRoutingSolution solution=(VisitorRoutingSolution)lastSolution.get("updatedSolution");
-        // 终止问题、更新至数据库并清除
-        SolutionEntity entity=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
-        entity.setStatus(SolverStatus.NOT_SOLVING.toString());
-        entity.setVisitorsJson(solution.getVisitorList());
-        solutionService.saveOrUpdate(entity);
+        if(save){
+            // 更新终止结果至数据库
+            SolutionEntity entity=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+            entity.setStatus(SolverStatus.NOT_SOLVING.toString());
+            entity.setVisitorsJson(solution.getVisitorList());
+            solutionService.saveOrUpdate(entity);
+        }
 
+        // 并清除
         solverJobMap.remove(problemID);
         solverSolutionQueue.remove(problemID);
 
@@ -205,6 +208,13 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
             problemList.add(solution);
         }
         return problemList;
+    }
+
+    @Override
+    public boolean deleteProblem(UUID problemID) {
+        boolean deleted=solutionService.remove(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+        terminalProblem(problemID,false);
+        return deleted;
     }
 
     private VisitorRoutingSolution generateSolution(ProblemInputVo problemInputVo){

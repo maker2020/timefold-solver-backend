@@ -27,9 +27,10 @@ public interface VisitorRoutingService {
     /**
      * 终止问题，并直接获取当前结果
      * @param problemID
+     * @param save 是否保存记录
      * @return
      */
-    Map<String,Object> terminalProblem(UUID problemID);
+    Map<String,Object> terminalProblem(UUID problemID,boolean save);
 
     /**
      * <p>获取求解问题列表</p>
@@ -37,5 +38,10 @@ public interface VisitorRoutingService {
      * @return
      */
     List<Map<String,Object>> listProblem();
+
+    /**
+     * 删除问题（数据记录)、并终止问题(若未解决)
+     */
+    boolean deleteProblem(UUID problemID);
 
 }

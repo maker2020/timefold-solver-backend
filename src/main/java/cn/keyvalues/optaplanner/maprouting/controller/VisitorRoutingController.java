@@ -62,7 +62,7 @@ public class VisitorRoutingController {
     @GetMapping("/terminalProblem")
     @Operation(summary = "立即终止问题并获取结果")
     public Result<?> terminalProblem(@RequestParam String problemID){
-        Map<String,Object> data = visitorRoutingService.terminalProblem(UUID.fromString(problemID));
+        Map<String,Object> data = visitorRoutingService.terminalProblem(UUID.fromString(problemID),true);
         return Result.OK(data);
     }
 
@@ -71,6 +71,12 @@ public class VisitorRoutingController {
     public Result<?> listProblem(){
         List<Map<String,Object>> data=visitorRoutingService.listProblem();
         return Result.OK(data);
+    }
+
+    @GetMapping("/deleteProblem")
+    @Operation(summary = "删除某个问题记录")
+    public Result<?> deleteProblem(@RequestParam String problemID){
+        return Result.OK(visitorRoutingService.deleteProblem(UUID.fromString(problemID)));
     }
 
 }
