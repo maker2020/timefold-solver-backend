@@ -22,17 +22,30 @@
   <constructionHeuristic>
   </constructionHeuristic>
   <localSearch>
-        <termination>
-          <unimprovedSecondsSpentLimit>120</unimprovedSecondsSpentLimit>
-        </termination>
-        <!-- 需要稳定展示解，可以打开该配置 -->
-        <!-- 配置备选解阀值  -->
-        <acceptor>
-          <lateAcceptanceSize>200</lateAcceptanceSize>
-        </acceptor>
-        <!-- 解选择，只接受一个最终解 -->
-        <forager>
-          <acceptedCountLimit>1</acceptedCountLimit>
-        </forager>
+    <!-- <unionMoveSelector>
+      <kOptListMoveSelector>
+        <originSelector id="5"/>
+        <valueSelector>
+          <nearbySelection>
+            <originValueSelector mimicSelectorRef="5"/>
+            <nearbyDistanceMeterClass></nearbyDistanceMeterClass>
+            <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </valueSelector>
+      </kOptListMoveSelector>
+    </unionMoveSelector> -->
+    <termination>
+      <unimprovedSecondsSpentLimit>120</unimprovedSecondsSpentLimit>
+    </termination>
+    <!-- 需要稳定展示解，可以打开该配置 -->
+    <!-- 配置备选解阀值（暂时关闭，等前端做出手动终止问题时再打开,否则不会停)  -->
+    <!-- <acceptor>
+      <lateAcceptanceSize>200</lateAcceptanceSize>
+    </acceptor> -->
+    <!-- 解选择，只接受一个最终解 -->
+    <forager>
+      <acceptedCountLimit>1</acceptedCountLimit>
+    </forager>
   </localSearch>
 </solver>

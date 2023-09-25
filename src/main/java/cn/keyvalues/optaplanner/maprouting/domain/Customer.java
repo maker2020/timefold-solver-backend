@@ -94,4 +94,19 @@ public class Customer extends AbstractPersistable{
         return optimalValue==null?0:(long)optimalValue;
     }
 
+    /**
+     * 这里到目标客户的策略优化值(时间？距离？)
+     * @return
+     */
+    @Hidden
+    @JSONField(serialize = false)
+    public long getOptimalValueTo(Customer destination){
+        StringBuilder sb=new StringBuilder();
+        Point destinationPoint=destination.getLocation().getPoint();
+        String key=sb.append(location.getPoint().toString()).append("->").append(destinationPoint.toString()).toString();
+        // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
+        Object optimalValue=VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        return optimalValue==null?0:(long)optimalValue;
+    }
+
 }
