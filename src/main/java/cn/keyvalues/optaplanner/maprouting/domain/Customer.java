@@ -12,7 +12,7 @@ import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
 import cn.keyvalues.optaplanner.geo.Point;
 import cn.keyvalues.optaplanner.maprouting.service.impl.VisitorRoutingServiceImpl;
-
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -57,6 +57,7 @@ public class Customer extends AbstractPersistable{
      * @return
      */
     @JSONField(serialize = false)
+    @Hidden
     public long getOptimalValueFromPreviousStandstill(){
         if(visitor==null){
             throw new IllegalStateException(
@@ -82,6 +83,7 @@ public class Customer extends AbstractPersistable{
      * 这里到起点到距离
      * @return
      */
+    @Hidden
     @JSONField(serialize = false)
     public long getOptimalValueToDepot(){
         StringBuilder sb=new StringBuilder();
