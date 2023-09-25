@@ -1,32 +1,45 @@
-package cn.keyvalues.optaplanner.config;
+// package cn.keyvalues.optaplanner.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+// import java.util.Arrays;
 
-@Configuration
-public class CorsConfig {
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.web.cors.CorsConfiguration;
+// import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+// import org.springframework.web.filter.CorsFilter;
 
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
+// @Configuration
+// public class CorsConfig {
 
-        // 允许的来源，可以是具体的域名，也可以是通配符（*）
-        config.addAllowedOrigin("*");
+//     // @Bean
+//     // public CorsFilter corsFilter() {
+//     //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//     //     CorsConfiguration config = new CorsConfiguration();
 
-        // 允许的HTTP方法，例如GET、POST等
-        config.addAllowedMethod("*");
+//     //     // 允许的来源，可以是具体的域名，也可以是通配符（*）
+//     //     config.addAllowedOrigin("*");
 
-        // 允许的请求头
-        config.addAllowedHeader("*");
+//     //     // 允许的HTTP方法，例如GET、POST等
+//     //     config.addAllowedMethod("*");
 
-        // 是否允许发送Cookie
-        config.setAllowCredentials(false);
+//     //     // 允许的请求头
+//     //     config.addAllowedHeader("*");
 
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-}
+//     //     // 是否允许发送Cookie
+//     //     config.setAllowCredentials(false);
+
+//     //     source.registerCorsConfiguration("/**", config);
+//     //     return new CorsFilter(source);
+//     // }
+
+//     @Bean
+//     public CorsConfiguration corsConfiguration() {
+//         CorsConfiguration configuration = new CorsConfiguration();
+//         configuration.setAllowedOrigins(Arrays.asList("http://allowed-origin.com"));
+//         configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
+//         configuration.setAllowCredentials(false);
+//         configuration.setMaxAge(3600L);
+//         return configuration;
+//     }
+
+// }
