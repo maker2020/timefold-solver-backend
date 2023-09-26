@@ -6,8 +6,10 @@ import java.util.List;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningListVariable;
 
-import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
+import com.alibaba.fastjson.annotation.JSONField;
 
+import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +23,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Visitor extends AbstractPersistable{
+public class Visitor extends AbstractPersistable implements LocationAware{
 
     private VisitorBase base;
 
@@ -35,6 +37,13 @@ public class Visitor extends AbstractPersistable{
     public Visitor(Long id,VisitorBase base){
         this.id=id;
         this.base=base;
+    }
+
+    @Hidden
+    @JSONField(serialize = false)
+    @Override
+    public Location getLocation() {
+        return base.getLocation();
     }
 
 }

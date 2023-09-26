@@ -43,7 +43,7 @@ public class CircularRefUtil {
         for(Customer c:customers){
             Map<String,Object> customer=new HashMap<>();
             customer.put("location", c.getLocation());
-            customer.put("tactics",c.getTactics());
+            // customer.put("tactics",c.getTactics());
             customerList_.add(customer);
         }
         return JSON.toJSONString(customerList_,SerializerFeature.DisableCircularReferenceDetect);

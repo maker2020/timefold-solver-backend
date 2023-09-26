@@ -22,22 +22,68 @@
   <constructionHeuristic>
   </constructionHeuristic>
   <localSearch>
-    <!-- <unionMoveSelector>
+    <termination>
+      <unimprovedSecondsSpentLimit>120</unimprovedSecondsSpentLimit>
+    </termination>
+    <unionMoveSelector>
+      <listChangeMoveSelector>
+        <valueSelector id="1"/>
+        <destinationSelector>
+          <nearbySelection>
+            <originValueSelector mimicSelectorRef="1"/>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </destinationSelector>
+      </listChangeMoveSelector>
+      <listSwapMoveSelector>
+        <valueSelector id="2"/>
+        <secondaryValueSelector>
+          <nearbySelection>
+            <originValueSelector mimicSelectorRef="2"/>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </secondaryValueSelector>
+      </listSwapMoveSelector>
+      <subListChangeMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+        <subListSelector id="3"/>
+        <destinationSelector>
+          <nearbySelection>
+            <originSubListSelector mimicSelectorRef="3"/>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </destinationSelector>
+      </subListChangeMoveSelector>
+      <subListSwapMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+        <subListSelector id="4"/>
+        <secondarySubListSelector>
+          <nearbySelection>
+            <originSubListSelector mimicSelectorRef="4"/>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
+            <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
+          </nearbySelection>
+        </secondarySubListSelector>
+      </subListSwapMoveSelector>
       <kOptListMoveSelector>
         <originSelector id="5"/>
         <valueSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="5"/>
-            <nearbyDistanceMeterClass></nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
         </valueSelector>
       </kOptListMoveSelector>
-    </unionMoveSelector> -->
-    <termination>
-      <unimprovedSecondsSpentLimit>120</unimprovedSecondsSpentLimit>
-    </termination>
+    </unionMoveSelector>
     <!-- 需要稳定展示解，可以打开该配置 -->
     <!-- 配置备选解阀值 -->
     <acceptor>

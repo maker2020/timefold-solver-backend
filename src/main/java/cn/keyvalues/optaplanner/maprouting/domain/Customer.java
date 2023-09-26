@@ -7,7 +7,6 @@ import org.optaplanner.core.api.domain.variable.PreviousElementShadowVariable;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
-import cn.keyvalues.optaplanner.common.enums.TacticsEnum;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
 import cn.keyvalues.optaplanner.geo.Point;
@@ -26,13 +25,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Customer extends AbstractPersistable{
+public class Customer extends AbstractPersistable implements LocationAware{
     
     @Schema(description = "位置")
     protected Location location;
 
-    @Schema(description = "地图API规划策略(上一个点到这里)")
-    protected TacticsEnum tactics=TacticsEnum.TWO;
+    // @Schema(description = "地图API规划策略(上一个点到这里)")
+    // protected TacticsEnum tactics=TacticsEnum.TWO;
 
     // 影子变量：按关联列表左右生成
     @Schema(hidden = true)
@@ -68,11 +67,15 @@ public class Customer extends AbstractPersistable{
         StringBuilder sb=new StringBuilder();
         Point previousPoint;
         if(previousCustomer==null){
-            previousPoint = visitor.getBase().getLocation().getPoint();
+            previousPoint = visitor.getLocation().getPoint();
         }else{
             previousPoint = previousCustomer.location.getPoint();
         }
-        String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).append(":").append(tactics).toString();
+        String key=sb.append(previousPoint.toString())
+                .append("->")
+                .append(location.getPoint().toString())
+                .append(":").append(location.getTactics())
+                .toString();
         Object optimalValue = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
         return optimalValue==null?0:(long)optimalValue;
         // String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).toString();
@@ -87,23 +90,29 @@ public class Customer extends AbstractPersistable{
     @JSONField(serialize = false)
     public long getOptimalValueToDepot(){
         StringBuilder sb=new StringBuilder();
-        Point basePoint=visitor.getBase().getLocation().getPoint();
-        String key=sb.append(location.getPoint().toString()).append("->").append(basePoint.toString()).toString();
+        Point basePoint=visitor.getLocation().getPoint();
+        String key=sb.append(location.getPoint().toString())
+                .append("->")
+                .append(basePoint.toString())
+                .toString();
         // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
         Object optimalValue=VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
         return optimalValue==null?0:(long)optimalValue;
     }
 
     /**
-     * 这里到目标客户的策略优化值(时间？距离？)
+     * 这里到目标 的策略优化值(时间？距离？)
      * @return
      */
     @Hidden
     @JSONField(serialize = false)
-    public long getOptimalValueTo(Customer destination){
+    public long getOptimalValueTo(Location destination){
         StringBuilder sb=new StringBuilder();
-        Point destinationPoint=destination.getLocation().getPoint();
-        String key=sb.append(location.getPoint().toString()).append("->").append(destinationPoint.toString()).toString();
+        String key=sb.append(location.getPoint().toString())
+                .append("->")
+                .append(destination.getPoint().toString())
+                .append(":").append(destination.getTactics())
+                .toString();
         // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
         Object optimalValue=VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
         return optimalValue==null?0:(long)optimalValue;

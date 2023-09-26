@@ -291,23 +291,23 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
             Point p1=b.getLocation().getPoint();
             StringBuilder sb=new StringBuilder();
             // a->b
-            String key0=sb.append(p0.toString()).append("->").append(p1.toString()).append(":").append(b.getTactics()).toString();
+            String key0=sb.append(p0.toString()).append("->").append(p1.toString()).append(":").append(b.getLocation().getTactics()).toString();
             long optimalValue0;
             // 先判断缓存
             if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key0)){
                 optimalValue0=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key0);
             }else{
-                optimalValue0 = baiduDirection.calculateOptimalValue(p0, p1, b.getTactics());
+                optimalValue0 = baiduDirection.calculateOptimalValue(p0, p1, b.getLocation().getTactics());
                 redisUtil.hset(RedisConstant.p2pOptimalValueMap, key0, optimalValue0, 1800);
             }
             sb.setLength(0);
             // b->a
-            String key1=sb.append(p1.toString()).append("->").append(p0.toString()).append(":").append(a.getTactics()).toString();
+            String key1=sb.append(p1.toString()).append("->").append(p0.toString()).append(":").append(a.getLocation().getTactics()).toString();
             long optimalValue1;
             if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key1)){
                 optimalValue1=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key1);
             }else{
-                optimalValue1 = baiduDirection.calculateOptimalValue(p1, p0, a.getTactics());
+                optimalValue1 = baiduDirection.calculateOptimalValue(p1, p0, a.getLocation().getTactics());
                 redisUtil.hset(RedisConstant.p2pOptimalValueMap, key1, optimalValue1, 1800);
             }
         }
