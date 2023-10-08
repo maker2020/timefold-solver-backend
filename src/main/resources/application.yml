@@ -2,3 +2,19 @@ server:
     port: 8080
     servlet:
         context-path: /planner
+
+mybatis-plus:
+  mapper-locations:
+  - classpath*:cn/keyvalues/optaplanner/**/mapper/xml/*Mapper.xml
+  global-config:
+    db-config:
+      #主键类型  0:"数据库ID自增",1:"该类型为未设置主键类型", 2:"用户输入ID",3:"全局唯一ID (数字类型唯一ID)", 4:"全局唯一ID UUID",5:"字符串全局唯一ID (idWorker 的字符串表示)";
+      id-type: ASSIGN_ID
+      # 默认数据库表下划线命名
+      table-underline: true
+  configuration:
+    # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 返回类型为Map,显示null对应的字段
+    call-setters-on-nulls: true
+    # map-underscore-to-camel-case: true
