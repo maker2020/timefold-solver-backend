@@ -13,7 +13,7 @@ import lombok.Setter;
  * </p>
  *
  * @author generator v3.5.3.1
- * @since 2023-10-08
+ * @since 2023-10-09
  */
 @Getter
 @Setter
@@ -28,4 +28,6 @@ public class Storehouse implements Serializable {
     private String name;
 
     private String coordinate;
+
+    private String address;
 }

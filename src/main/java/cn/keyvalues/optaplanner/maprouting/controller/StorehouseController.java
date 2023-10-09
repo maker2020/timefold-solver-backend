@@ -19,7 +19,7 @@ import cn.keyvalues.optaplanner.maprouting.service.IStorehouseService;
  * </p>
  *
  * @author generator v3.5.3.1
- * @since 2023-10-08
+ * @since 2023-10-09
  */
 @RestController
 @RequestMapping("/storehouse")

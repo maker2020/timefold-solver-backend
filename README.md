@@ -1,5 +1,10 @@
 # 求解器地图应用Demo设计
 
+## 子模块
+
+1. TSP问题
+2. CFLP问题
+
 ## 管理模块
 
 ### Task Manager

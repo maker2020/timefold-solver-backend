@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author generator v3.5.3.1
- * @since 2023-10-08
+ * @since 2023-10-09
  */
 public interface IStorehouseService extends IService<Storehouse> {
 

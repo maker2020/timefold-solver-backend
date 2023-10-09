@@ -32,4 +32,6 @@ public class CustomerOrder implements Serializable {
     private String coordinate;
 
     private Boolean disabled;
+
+    private String address;
 }
