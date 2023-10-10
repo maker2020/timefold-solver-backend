@@ -6,7 +6,7 @@ import org.optaplanner.core.api.score.director.ScoreDirector;
 import cn.keyvalues.optaplanner.cflp.domain.Customer;
 import cn.keyvalues.optaplanner.cflp.domain.FacilityLocationSolution;
 
-public class RemainingDemandShadowListener implements VariableListener<FacilityLocationSolution,Customer>{
+public class ServerCustomerShadowListener implements VariableListener<FacilityLocationSolution,Customer>{
 
     @Override
     public void beforeEntityAdded(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer entity) {

@@ -9,9 +9,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.maprouting.domain.entity.CustomerOrder;
 import cn.keyvalues.optaplanner.maprouting.service.ICustomerOrderService;
+import cn.keyvalues.optaplanner.utils.mybatisplus.PageUtil;
 
 /**
  * <p>
@@ -30,7 +34,9 @@ public class CustomerOrderController {
 
     @GetMapping("/list")
     public Result<?> list(){
-        return Result.OK(service.list());
+        Page<CustomerOrder> page = PageUtil.getPage();
+        IPage<CustomerOrder> pageInfo=service.page(page);
+        return Result.OK(pageInfo);
     }
 
     @DeleteMapping("/delete")

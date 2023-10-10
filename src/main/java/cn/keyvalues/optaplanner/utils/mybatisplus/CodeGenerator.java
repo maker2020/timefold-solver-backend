@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.maprouting.utils.mybatisplus;
+package cn.keyvalues.optaplanner.utils.mybatisplus;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;

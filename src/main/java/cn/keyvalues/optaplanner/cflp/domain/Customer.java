@@ -27,12 +27,11 @@ public class Customer extends AbstractPersistable{
     @PlanningVariable(valueRangeProviderRefs = "serverStationList")
     protected ServerStation serverStation;
 
-    // /**
-    //  * 记录剩余需求量（初始化=demand)
-    //  */
-    // @ShadowVariable(variableListenerClass = RemainingDemandShadowListener.class
-    //         ,sourceVariableName = "serverStation")
-    // protected Long remainingDemand;
+    /**
+     * 记录剩余需求量（初始化=demand)
+     */
+    // @ShadowVariable
+    // protected long remainingDemand;
 
     public Customer(long id,long demand,Location location){
         super(id);
