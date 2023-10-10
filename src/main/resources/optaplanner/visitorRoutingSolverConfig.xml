@@ -6,12 +6,12 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>cn.keyvalues.optaplanner.maprouting.domain.VisitorRoutingSolution</solutionClass>
-  <entityClass>cn.keyvalues.optaplanner.maprouting.domain.Visitor</entityClass>
-  <entityClass>cn.keyvalues.optaplanner.maprouting.domain.Customer</entityClass>
+  <solutionClass>cn.keyvalues.optaplanner.solution.maprouting.domain.VisitorRoutingSolution</solutionClass>
+  <entityClass>cn.keyvalues.optaplanner.solution.maprouting.domain.Visitor</entityClass>
+  <entityClass>cn.keyvalues.optaplanner.solution.maprouting.domain.Customer</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>cn.keyvalues.optaplanner.maprouting.solver.VisitorRoutingConstraint</constraintProviderClass>
+    <constraintProviderClass>cn.keyvalues.optaplanner.solution.maprouting.solver.VisitorRoutingConstraint</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
@@ -31,7 +31,7 @@
         <destinationSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="1"/>
-            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.solution.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -42,7 +42,7 @@
         <secondaryValueSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="2"/>
-            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.solution.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -54,7 +54,7 @@
         <destinationSelector>
           <nearbySelection>
             <originSubListSelector mimicSelectorRef="3"/>
-            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.solution.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -66,7 +66,7 @@
         <secondarySubListSelector>
           <nearbySelection>
             <originSubListSelector mimicSelectorRef="4"/>
-            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.solution.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>
@@ -77,7 +77,7 @@
         <valueSelector>
           <nearbySelection>
             <originValueSelector mimicSelectorRef="5"/>
-            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
+            <nearbyDistanceMeterClass>cn.keyvalues.optaplanner.solution.maprouting.solver.nearby.CustomerNearbyOptimalValue</nearbyDistanceMeterClass>
             <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
             <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
           </nearbySelection>

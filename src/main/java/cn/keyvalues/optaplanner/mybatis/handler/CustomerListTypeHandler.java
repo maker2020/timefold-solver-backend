@@ -6,7 +6,7 @@ import org.apache.ibatis.type.MappedTypes;
 
 import com.alibaba.fastjson.TypeReference;
 
-import cn.keyvalues.optaplanner.maprouting.domain.Customer;
+import cn.keyvalues.optaplanner.solution.maprouting.domain.Customer;
 
 @MappedTypes(List.class)
 public class CustomerListTypeHandler extends JsonListTypeHandler<Customer>{
