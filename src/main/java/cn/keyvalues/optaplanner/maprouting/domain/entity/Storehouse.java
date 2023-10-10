@@ -30,4 +30,6 @@ public class Storehouse implements Serializable {
     private String coordinate;
 
     private String address;
+
+    private String citycode;
 }

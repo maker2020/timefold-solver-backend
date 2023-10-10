@@ -1,7 +1,6 @@
 package cn.keyvalues.optaplanner.cflp.domain;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.CustomShadowVariable;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
@@ -28,17 +27,18 @@ public class Customer extends AbstractPersistable{
     @PlanningVariable(valueRangeProviderRefs = "serverStationList")
     protected ServerStation serverStation;
 
-    /**
-     * 记录剩余需求量（初始化=demand)
-     */
-    // @CustomShadowVariable
-    protected long remainingDemand;
+    // /**
+    //  * 记录剩余需求量（初始化=demand)
+    //  */
+    // @ShadowVariable(variableListenerClass = RemainingDemandShadowListener.class
+    //         ,sourceVariableName = "serverStation")
+    // protected Long remainingDemand;
 
     public Customer(long id,long demand,Location location){
         super(id);
         this.demand=demand;
         this.location=location;
-        remainingDemand=demand;
+        // remainingDemand=demand;
     }
 
     // @JSONField(serialize = false)

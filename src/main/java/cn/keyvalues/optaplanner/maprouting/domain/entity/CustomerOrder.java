@@ -34,4 +34,6 @@ public class CustomerOrder implements Serializable {
     private Boolean disabled;
 
     private String address;
+
+    private String citycode;
 }
