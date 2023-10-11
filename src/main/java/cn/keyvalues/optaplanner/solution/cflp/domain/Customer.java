@@ -21,6 +21,7 @@ import lombok.ToString;
 @ToString
 public class Customer extends AbstractPersistable{
     
+    protected long maxDemand;
     protected long demand;
     protected Location location;
 
@@ -33,11 +34,12 @@ public class Customer extends AbstractPersistable{
     // @ShadowVariable
     // protected long remainingDemand;
 
-    public Customer(long id,long demand,Location location){
+    public Customer(long id,long maxDemand,Location location){
         super(id);
-        this.demand=demand;
+        this.demand=maxDemand;
         this.location=location;
         // remainingDemand=demand;
+        this.maxDemand=maxDemand;
     }
 
     // @JSONField(serialize = false)

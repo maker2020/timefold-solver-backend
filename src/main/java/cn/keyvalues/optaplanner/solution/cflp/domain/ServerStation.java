@@ -22,6 +22,7 @@ import lombok.ToString;
 public class ServerStation extends AbstractPersistable {
     
     protected Location location;
+    protected long maxCapacity;
     protected long capacity;
     protected double radius;
 
@@ -31,10 +32,11 @@ public class ServerStation extends AbstractPersistable {
     @InverseRelationShadowVariable(sourceVariableName = "serverStation")
     protected List<Customer> servedCustomers=new ArrayList<>();
 
-    public ServerStation(long id,Location location,long capacity,double radius){
+    public ServerStation(long id,Location location,long maxCapacity,double radius){
         super(id);
         this.location=location;
-        this.capacity=capacity;
+        this.maxCapacity=maxCapacity;
+        this.capacity=maxCapacity;
         this.radius=radius;
     }
 
