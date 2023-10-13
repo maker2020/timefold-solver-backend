@@ -1,12 +1,12 @@
-package cn.keyvalues.optaplanner.solution.cflp.solver;
+package cn.keyvalues.optaplanner.solution.test.solver;
 
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintCollectors;
 import org.optaplanner.core.api.score.stream.ConstraintFactory;
 import org.optaplanner.core.api.score.stream.ConstraintProvider;
 
-import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
-import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationConstraintConfig;
+import cn.keyvalues.optaplanner.solution.test.domain.Customer;
+import cn.keyvalues.optaplanner.solution.test.domain.FacilityLocationConstraintConfig;
 
 public class FacilityLocationConstraint implements ConstraintProvider {
 
@@ -22,8 +22,8 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     * 容量约束
     */
     Constraint serverStationCapicity(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(Assign.class)
-                .groupBy(Assign::getStation, ConstraintCollectors.sumLong(Assign::getAssignedDemand))
+        return constraintFactory.forEach(Customer.class)
+                .groupBy(Customer::getStation, ConstraintCollectors.sumLong(Customer::getMaxDemand))
                 .filter((station, demand) -> demand > station.getMaxCapacity())
                 .penalizeConfigurableLong((station, demand) -> demand - station.getMaxCapacity())
                 .asConstraint(FacilityLocationConstraintConfig.FACILITY_CAPACITY);
@@ -33,9 +33,9 @@ public class FacilityLocationConstraint implements ConstraintProvider {
      * 半径约束
      */
     Constraint serverRadius(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(Assign.class)
-                .filter(assign->assign.getStation().getRadius()<assign.getBetweenDistance())
-                .penalizeConfigurableLong(assign->(long)(assign.getBetweenDistance()-assign.getStation().getRadius()))
+        return constraintFactory.forEach(Customer.class)
+                .filter(customer->customer.getStation().getRadius()<customer.getDistanceToServerStation())
+                .penalizeConfigurableLong(customer->(long)(customer.getDistanceToServerStation()-customer.getStation().getRadius()))
                 .asConstraint(FacilityLocationConstraintConfig.SERVER_RADIUS);
     }
     

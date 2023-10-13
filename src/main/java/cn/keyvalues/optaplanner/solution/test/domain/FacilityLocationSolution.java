@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.solution.cflp.domain;
+package cn.keyvalues.optaplanner.solution.test.domain;
 
 import java.util.List;
 
@@ -25,16 +25,8 @@ public class FacilityLocationSolution extends AbstractPersistable{
     @ValueRangeProvider(id = "serverStationList")
     protected List<ServerStation> serverStations;
 
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider(id = "customerList")
-    protected List<Customer> customers;
-
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider(id = "demandChoices")
-    protected List<Long> demandChoices;
-
     @PlanningEntityCollectionProperty
-    protected List<Assign> assigns;
+    protected List<Customer> customers;
 
     @PlanningScore
     protected HardSoftLongScore score;

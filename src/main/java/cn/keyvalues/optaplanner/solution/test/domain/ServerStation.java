@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.solution.cflp.domain;
+package cn.keyvalues.optaplanner.solution.test.domain;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
 import org.optaplanner.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.solution.cflp.solver.RemainingCapacityListener;
+import cn.keyvalues.optaplanner.solution.test.solver.RemainingCapacityListener;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,31 +26,21 @@ public class ServerStation extends AbstractPersistable {
     protected Location location;
     protected long maxCapacity;
     protected double radius;
-    
-    /**
-     * 求解器可以对此增删改
-     */
-    @InverseRelationShadowVariable(sourceVariableName = "station")
-    protected List<Assign> assignedCustomers=new ArrayList<>();
 
-    @ShadowVariable(variableListenerClass = RemainingCapacityListener.class,sourceEntityClass = Assign.class,sourceVariableName = "assignedDemand")
+    @InverseRelationShadowVariable(sourceVariableName = "station")
+    protected List<Customer> assignedCustomers=new ArrayList<>();
+
+    // 这里应该将sourceVar指向assigned...影子变量，以保证顺序先后。
+    @ShadowVariable(variableListenerClass = RemainingCapacityListener.class
+            ,sourceEntityClass = ServerStation.class,sourceVariableName = "assignedCustomers")
     protected Long remainingCapacity;
 
     public ServerStation(long id,Location location,long maxCapacity,double radius){
         super(id);
         this.location=location;
         this.maxCapacity=maxCapacity;
+        remainingCapacity=maxCapacity;
         this.radius=radius;
-    }
-
-    public long getUsedCapacity(){
-        return assignedCustomers.stream().filter(assign->assign.getStation()==this && assign.getCustomer()!=null)
-                .mapToLong(assign->assign.getAssignedDemand()).sum();
-    }
-
-    public boolean isUsed() {
-        return assignedCustomers.stream()
-                .anyMatch(assign->assign.getStation()==this&&assign.getCustomer()!=null);
     }
 
 }

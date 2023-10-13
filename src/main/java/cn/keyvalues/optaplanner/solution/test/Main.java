@@ -1,7 +1,6 @@
-package cn.keyvalues.optaplanner.solution.cflp;
+package cn.keyvalues.optaplanner.solution.test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.optaplanner.core.api.solver.Solver;
@@ -10,11 +9,10 @@ import org.optaplanner.core.api.solver.SolverFactory;
 import com.alibaba.fastjson.JSON;
 
 import cn.keyvalues.optaplanner.geo.Point;
-import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
-import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
-import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationSolution;
-import cn.keyvalues.optaplanner.solution.cflp.domain.Location;
-import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
+import cn.keyvalues.optaplanner.solution.test.domain.Customer;
+import cn.keyvalues.optaplanner.solution.test.domain.FacilityLocationSolution;
+import cn.keyvalues.optaplanner.solution.test.domain.Location;
+import cn.keyvalues.optaplanner.solution.test.domain.ServerStation;
 
 public class Main {
     public static void main(String[] args) {
@@ -43,27 +41,8 @@ public class Main {
 
         solution.setServerStations(stations);
 
-        // demand choices range
-        // 按客户最大容量，求解器有机会拆分
-        long demand=Collections.max(customers, (r1,r2)->Long.compare(r1.getMaxDemand(), r2.getMaxDemand())).getMaxDemand();
-        List<Long> demandChoices=new ArrayList<>();
-        for(int i=0;i<=demand;i++){
-            demandChoices.add((long)i);
-        }
 
-        solution.setDemandChoices(demandChoices);
-
-        // Assign的数量
-        List<Assign> assigns=new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
-            Assign assign = new Assign(i);
-            // Initialize other properties of Assign if needed
-            assigns.add(assign);
-        }
-
-        solution.setAssigns(assigns);
-
-        String configPath="optaplanner/facilityLocationSolverConfig.xml";
+        String configPath="optaplanner/test/facilityLocationSolverConfig.xml";
         SolverFactory<FacilityLocationSolution> solverFactory = SolverFactory.createFromXmlResource(
                 configPath);
         Solver<FacilityLocationSolution> solver = solverFactory.buildSolver();

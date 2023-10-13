@@ -6,13 +6,12 @@
   <!-- To solve faster by saturating multiple CPU cores -->
   <!--<moveThreadCount>AUTO</moveThreadCount>-->
 
-  <solutionClass>cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationSolution</solutionClass>
-  <entityClass>cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation</entityClass>
-  <entityClass>cn.keyvalues.optaplanner.solution.cflp.domain.Customer</entityClass>
-  <entityClass>cn.keyvalues.optaplanner.solution.cflp.domain.Assign</entityClass>
+  <solutionClass>cn.keyvalues.optaplanner.solution.test.domain.FacilityLocationSolution</solutionClass>
+  <entityClass>cn.keyvalues.optaplanner.solution.test.domain.ServerStation</entityClass>
+  <entityClass>cn.keyvalues.optaplanner.solution.test.domain.Customer</entityClass>
 
   <scoreDirectorFactory>
-    <constraintProviderClass>cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint</constraintProviderClass>
+    <constraintProviderClass>cn.keyvalues.optaplanner.solution.test.solver.FacilityLocationConstraint</constraintProviderClass>
     <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
