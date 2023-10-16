@@ -37,6 +37,9 @@ import cn.keyvalues.optaplanner.solution.maprouting.service.VisitorRoutingServic
 import cn.keyvalues.optaplanner.solution.maprouting.utils.CircularRefUtil;
 import cn.keyvalues.optaplanner.utils.RedisUtil;
 
+/**
+ * 注：该求解实现类中的长期对象除DoS限制，后期应加额外守护清除机制
+ */
 @Service
 public class VisitorRoutingServiceImpl implements VisitorRoutingService{
 
@@ -90,6 +93,8 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
             SolverStatus status = solverManager.getSolverStatus(problemID);
             newData.put("status", status);
             newData.put("updatedSolution", update);
+            // 为每个visitor的optimalMap字段赋值：即获取访问者的路径API数据
+            update.getVisitorList().forEach(v->v.arrangeOptimalRelatedMap());
             syncQueue.add(newData);
             
             // 使数据库保持最新数据状态
@@ -271,13 +276,13 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
         List<List<Customer>> combinationList2 = new ArrayList<>();
         List<Point> points=initializedSolution.getVisitorList().stream().map(v->v.getBase().getLocation().getPoint()).toList();
         for(Point origin:points){
-            List<Customer> item=new ArrayList<>();
             Customer cOirgin=new Customer(-1, new Location(-1, origin));
-            item.add(cOirgin);
             for(Customer to:customerList){
+                List<Customer> item=new ArrayList<>();
+                item.add(cOirgin);
                 item.add(to);
+                combinationList2.add(item);
             }
-            combinationList2.add(item);
         }
         combinationList.addAll(combinationList2);
 
@@ -290,25 +295,23 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
             Point p0=a.getLocation().getPoint();
             Point p1=b.getLocation().getPoint();
             StringBuilder sb=new StringBuilder();
+
+            // 存入缓存。
+
             // a->b
             String key0=sb.append(p0.toString()).append("->").append(p1.toString()).append(":").append(b.getLocation().getTactics()).toString();
-            long optimalValue0;
-            // 先判断缓存
-            if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key0)){
-                optimalValue0=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key0);
-            }else{
-                optimalValue0 = baiduDirection.calculateOptimalValue(p0, p1, b.getLocation().getTactics());
-                redisUtil.hset(RedisConstant.p2pOptimalValueMap, key0, optimalValue0, 1800);
+            if(!redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key0)){
+                Map<String,Object> optimalMap=baiduDirection.calculateOptimalMap(p0, p1, b.getLocation().getTactics());
+                redisUtil.hset(RedisConstant.p2pOptimalValueMap, key0, optimalMap, 1800);
             }
+
             sb.setLength(0);
+
             // b->a
             String key1=sb.append(p1.toString()).append("->").append(p0.toString()).append(":").append(a.getLocation().getTactics()).toString();
-            long optimalValue1;
-            if(redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key1)){
-                optimalValue1=(long)redisUtil.hget(RedisConstant.p2pOptimalValueMap,key1);
-            }else{
-                optimalValue1 = baiduDirection.calculateOptimalValue(p1, p0, a.getLocation().getTactics());
-                redisUtil.hset(RedisConstant.p2pOptimalValueMap, key1, optimalValue1, 1800);
+            if(!redisUtil.hHasKey(RedisConstant.p2pOptimalValueMap, key1)){
+                Map<String,Object> optimalMap=baiduDirection.calculateOptimalMap(p1, p0, a.getLocation().getTactics());
+                redisUtil.hset(RedisConstant.p2pOptimalValueMap, key1, optimalMap, 1800);
             }
         }
     }

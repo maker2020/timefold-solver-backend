@@ -56,6 +56,8 @@ public class CircularRefUtil {
             visitor.put("base", v.getBase());
             String customersJSON = getNoEachReferenceCustomers(v.getCustomers());
             visitor.put("customers", JSON.parse(customersJSON));
+            // 访问路径及详细信息。
+            visitor.put("routingInfo", v.getOptimalRelatedMap());
             visitorList_.add(visitor);
         }
         return JSON.toJSONString(visitorList_,SerializerFeature.DisableCircularReferenceDetect);

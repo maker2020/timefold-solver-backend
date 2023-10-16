@@ -1,5 +1,7 @@
 package cn.keyvalues.optaplanner.solution.maprouting.domain;
 
+import java.util.Map;
+
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
 import org.optaplanner.core.api.domain.variable.NextElementShadowVariable;
@@ -57,6 +59,7 @@ public class Customer extends AbstractPersistable implements LocationAware{
      */
     @JSONField(serialize = false)
     @Hidden
+    @SuppressWarnings("unchecked")
     public long getOptimalValueFromPreviousStandstill(){
         if(visitor==null){
             throw new IllegalStateException(
@@ -76,8 +79,8 @@ public class Customer extends AbstractPersistable implements LocationAware{
                 .append(location.getPoint().toString())
                 .append(":").append(location.getTactics())
                 .toString();
-        Object optimalValue = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
-        return optimalValue==null?0:(long)optimalValue;
+        Object optimalMap = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        return optimalMap==null?0:(long)((Map<String,Object>)optimalMap).get("optimalValue");
         // String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).toString();
         // return Main2.p2pOptimalValueMap.getOrDefault(key,0L);
     }
@@ -88,16 +91,18 @@ public class Customer extends AbstractPersistable implements LocationAware{
      */
     @Hidden
     @JSONField(serialize = false)
+    @SuppressWarnings("unchecked")
     public long getOptimalValueToDepot(){
         StringBuilder sb=new StringBuilder();
-        Point basePoint=visitor.getLocation().getPoint();
+        Location baseLocation=visitor.getLocation();
         String key=sb.append(location.getPoint().toString())
                 .append("->")
-                .append(basePoint.toString())
+                .append(baseLocation.getPoint().toString())
+                .append(":").append(baseLocation.getTactics())
                 .toString();
         // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
-        Object optimalValue=VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
-        return optimalValue==null?0:(long)optimalValue;
+        Object optimalMap = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        return optimalMap==null?0:(long)((Map<String,Object>)optimalMap).get("optimalValue");
     }
 
     /**
@@ -106,6 +111,7 @@ public class Customer extends AbstractPersistable implements LocationAware{
      */
     @Hidden
     @JSONField(serialize = false)
+    @SuppressWarnings("unchecked")
     public long getOptimalValueTo(Location destination){
         StringBuilder sb=new StringBuilder();
         String key=sb.append(location.getPoint().toString())
@@ -114,8 +120,8 @@ public class Customer extends AbstractPersistable implements LocationAware{
                 .append(":").append(destination.getTactics())
                 .toString();
         // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
-        Object optimalValue=VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
-        return optimalValue==null?0:(long)optimalValue;
+        Object optimalMap = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        return optimalMap==null?0:(long)((Map<String,Object>)optimalMap).get("optimalValue");
     }
 
 }

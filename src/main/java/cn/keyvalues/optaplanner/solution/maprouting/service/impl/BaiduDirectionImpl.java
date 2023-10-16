@@ -1,5 +1,8 @@
 package cn.keyvalues.optaplanner.solution.maprouting.service.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -35,7 +38,8 @@ public class BaiduDirectionImpl implements BaiduDirection{
     }
 
     @Override
-    public long calculateOptimalValue(Point point1, Point point2, TacticsEnum tactics) {
+    public Map<String,Object> calculateOptimalMap(Point point1, Point point2, TacticsEnum tactics) {
+        Map<String,Object> optimalRelatedMap=new HashMap<>();
         long optimalValue=0;
         String params=String.format("""
             {
@@ -52,7 +56,11 @@ public class BaiduDirectionImpl implements BaiduDirection{
         }else if(TacticsEnum.SIX.equals(tactics)){
             optimalValue=result_.getIntValue("taxi_fee");
         }
-        return optimalValue;
+        // 例如需要实时按导航路径来绘制图形，或每两点所需要的时间等信息。
+        optimalRelatedMap.put("relatedData", result_);
+        
+        optimalRelatedMap.put("optimalValue", optimalValue);
+        return optimalRelatedMap;
     }
     
 }
