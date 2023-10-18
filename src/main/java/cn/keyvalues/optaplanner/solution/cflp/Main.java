@@ -47,15 +47,15 @@ public class Main {
         // 按客户最大容量，求解器有机会拆分
         long demand=Collections.max(customers, (r1,r2)->Long.compare(r1.getMaxDemand(), r2.getMaxDemand())).getMaxDemand();
         List<Long> demandChoices=new ArrayList<>();
-        for(int i=0;i<=demand;i++){
+        for(int i=1;i<=demand;i++){ // 不能分配0个，因为属于不分配
             demandChoices.add((long)i);
         }
 
         solution.setDemandChoices(demandChoices);
 
-        // Assign的数量
+        // Assign的结果数量怎么去定，还需要研究
         List<Assign> assigns=new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 4; i++) {
             Assign assign = new Assign(i);
             // Initialize other properties of Assign if needed
             assigns.add(assign);

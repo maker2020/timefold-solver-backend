@@ -4,8 +4,10 @@ import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintCollectors;
 import org.optaplanner.core.api.score.stream.ConstraintFactory;
 import org.optaplanner.core.api.score.stream.ConstraintProvider;
+import org.optaplanner.core.api.score.stream.Joiners;
 
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
+import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
 import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationConstraintConfig;
 
 public class FacilityLocationConstraint implements ConstraintProvider {
@@ -14,8 +16,52 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
             serverStationCapicity(constraintFactory),
-            serverRadius(constraintFactory)
+            serverRadius(constraintFactory),
+            uniqueEntity(constraintFactory),
+            noRestDemand(constraintFactory),
+            greedyDemand(constraintFactory),
+            lessStation(constraintFactory),
         };
+    }
+
+    /**
+     * 消耗需求的奖励（触发贪婪）
+     */
+    Constraint greedyDemand(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Assign.class)
+                .rewardConfigurableLong(assign->assign.getAssignedDemand())
+                .asConstraint(FacilityLocationConstraintConfig.GREEDY_DEMAND);
+    }
+
+    /**
+     * 不能有剩余需求
+     */
+    Constraint noRestDemand(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Customer.class)
+                .filter(c->c.getRemainingDemand()!=0)
+                .penalizeConfigurable()
+                .asConstraint(FacilityLocationConstraintConfig.NO_REST_DEMAND);
+    }
+
+    /**
+     * 服务站最少约束
+     */
+    Constraint lessStation(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Assign.class)
+                .groupBy(Assign::getStation)
+                .penalizeConfigurableLong(station->1)
+                .asConstraint(FacilityLocationConstraintConfig.LESS_STATION);
+    }
+    
+    /**
+     * 不重复约束
+     */
+    Constraint uniqueEntity(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Assign.class)
+                .join(Assign.class,Joiners.lessThan(Assign::getId),
+                        Joiners.equal(Assign::getCustomer),Joiners.equal(Assign::getStation))
+                .penalizeConfigurable()
+                .asConstraint(FacilityLocationConstraintConfig.UNIQUE_ENTITY);
     }
 
     /**

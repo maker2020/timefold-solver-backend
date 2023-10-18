@@ -5,10 +5,8 @@ import java.util.List;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
-import org.optaplanner.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.solution.cflp.solver.RemainingCapacityListener;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,9 +30,6 @@ public class ServerStation extends AbstractPersistable {
      */
     @InverseRelationShadowVariable(sourceVariableName = "station")
     protected List<Assign> assignedCustomers=new ArrayList<>();
-
-    @ShadowVariable(variableListenerClass = RemainingCapacityListener.class,sourceEntityClass = Assign.class,sourceVariableName = "assignedDemand")
-    protected Long remainingCapacity;
 
     public ServerStation(long id,Location location,long maxCapacity,double radius){
         super(id);

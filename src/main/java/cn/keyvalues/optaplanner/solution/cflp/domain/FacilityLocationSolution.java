@@ -8,7 +8,7 @@ import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.domain.solution.ProblemFactCollectionProperty;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
-import org.optaplanner.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import lombok.Getter;
@@ -37,7 +37,7 @@ public class FacilityLocationSolution extends AbstractPersistable{
     protected List<Assign> assigns;
 
     @PlanningScore
-    protected HardSoftLongScore score;
+    protected HardMediumSoftLongScore score;
 
     @ConstraintConfigurationProvider
     private FacilityLocationConstraintConfig constraintConfiguration = new FacilityLocationConstraintConfig();

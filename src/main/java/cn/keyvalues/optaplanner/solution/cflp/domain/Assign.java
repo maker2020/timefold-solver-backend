@@ -7,6 +7,9 @@ import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 为了表示多对多，即用一对一，不用PlanningListVariable即要写约束来限制重复
+ */
 @Setter
 @Getter
 @PlanningEntity
