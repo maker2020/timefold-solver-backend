@@ -15,13 +15,13 @@ import lombok.Setter;
 @PlanningEntity
 public class Assign extends AbstractPersistable{
 
-    @PlanningVariable(valueRangeProviderRefs = "customerList")
+    @PlanningVariable(valueRangeProviderRefs = "customerList",nullable = true)
     protected Customer customer;
 
-    @PlanningVariable(valueRangeProviderRefs = "serverStationList")
+    @PlanningVariable(valueRangeProviderRefs = "serverStationList",nullable = true)
     protected ServerStation station;
 
-    @PlanningVariable(valueRangeProviderRefs = "demandChoices")
+    @PlanningVariable(valueRangeProviderRefs = "demandChoices",nullable = true)
     protected Long assignedDemand;
 
     // 如果两个shadowvar共同监听不行，则在此加一个规划变量
@@ -33,7 +33,11 @@ public class Assign extends AbstractPersistable{
     }
 
     public double getBetweenDistance(){
-        return customer.getLocation().getDistanceTo(station.getLocation());
+        if(customer!=null && customer.getLocation()!=null
+                && station!=null && station.getLocation()!=null){
+            return customer.getLocation().getDistanceTo(station.getLocation());
+        }
+        return -1;
     }
     
 }

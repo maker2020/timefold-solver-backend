@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
+import org.optaplanner.core.api.solver.SolutionManager;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
-
-import com.alibaba.fastjson.JSON;
 
 import cn.keyvalues.optaplanner.geo.Point;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
@@ -54,8 +54,10 @@ public class Main {
         solution.setDemandChoices(demandChoices);
 
         // Assign的结果数量怎么去定，还需要研究
+        // 结果未知只能按最大区限，所以规划变量nullable=true
+        // 即 m * n
         List<Assign> assigns=new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 6; i++) {
             Assign assign = new Assign(i);
             // Initialize other properties of Assign if needed
             assigns.add(assign);
@@ -66,9 +68,11 @@ public class Main {
         String configPath="optaplanner/facilityLocationSolverConfig.xml";
         SolverFactory<FacilityLocationSolution> solverFactory = SolverFactory.createFromXmlResource(
                 configPath);
+        SolutionManager<FacilityLocationSolution,HardMediumSoftLongScore> solutionManager=SolutionManager.create(solverFactory);
         Solver<FacilityLocationSolution> solver = solverFactory.buildSolver();
         FacilityLocationSolution resolved = solver.solve(solution);
-        System.out.println(JSON.toJSONString(resolved));
-
+        // System.out.println(JSON.toJSONString(resolved));
+        var obj=solutionManager.explain(resolved);
+        System.out.println(obj);
     }
 }

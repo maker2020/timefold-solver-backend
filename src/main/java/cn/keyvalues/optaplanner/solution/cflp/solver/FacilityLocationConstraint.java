@@ -21,6 +21,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
             noRestDemand(constraintFactory),
             greedyDemand(constraintFactory),
             lessStation(constraintFactory),
+            // 更好的是，加一个分配数不能超过总需求（浪费）的约束
         };
     }
 
@@ -47,7 +48,11 @@ public class FacilityLocationConstraint implements ConstraintProvider {
      * 服务站最少约束
      */
     Constraint lessStation(ConstraintFactory constraintFactory) {
+        // it is automatically filtered to only contain entities
+        // for which each genuine PlanningVariable (of the sourceClass or a superclass thereof) has a non-null value
         return constraintFactory.forEach(Assign.class)
+                // .filter(assign->assign.getAssignedDemand()!=null 
+                //         && assign.getCustomer()!=null && assign.getStation()!=null)
                 .groupBy(Assign::getStation)
                 .penalizeConfigurableLong(station->1)
                 .asConstraint(FacilityLocationConstraintConfig.LESS_STATION);

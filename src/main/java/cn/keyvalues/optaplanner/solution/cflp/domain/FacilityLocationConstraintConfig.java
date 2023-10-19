@@ -52,6 +52,11 @@ public class FacilityLocationConstraintConfig {
     @ConstraintWeight(NO_REST_DEMAND)
     HardMediumSoftLongScore noRestDemand=HardMediumSoftLongScore.ofHard(1);
 
+
+
+    /************ 预留扩展 ************/
+
+
     /**
     * 设施修建费
     */

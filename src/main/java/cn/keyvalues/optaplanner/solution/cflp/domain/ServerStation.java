@@ -39,13 +39,14 @@ public class ServerStation extends AbstractPersistable {
     }
 
     public long getUsedCapacity(){
-        return assignedCustomers.stream().filter(assign->assign.getStation()==this && assign.getCustomer()!=null)
+        return assignedCustomers.stream().filter(assign->assign.getCustomer()!=null 
+                && assign.getAssignedDemand()!=null)
                 .mapToLong(assign->assign.getAssignedDemand()).sum();
     }
 
     public boolean isUsed() {
         return assignedCustomers.stream()
-                .anyMatch(assign->assign.getStation()==this&&assign.getCustomer()!=null);
+                .anyMatch(assign->assign.getCustomer()!=null && assign.getAssignedDemand()!=null);
     }
 
 }

@@ -38,14 +38,15 @@ public class Customer extends AbstractPersistable{
 
     public boolean isAssigned(){
         return assignedStations.stream()
-                .anyMatch(assign->assign.getCustomer()==this && assign.getStation()!=null);
+                .anyMatch(assign->assign.getStation()!=null && assign.getAssignedDemand()!=null);
     }
 
     public long getRemainingDemand(){
         long remainingDemand=maxDemand;
-        for (Assign assgin : assignedStations) {
-            if(assgin.getCustomer()==this && assgin.getStation()!=null){
-                remainingDemand-=assgin.getAssignedDemand();
+        for (Assign assign : assignedStations) {
+            // 无效代码:assign.getCustomer()!=null && assign.getCustomer()==this 
+            if(assign.getStation()!=null && assign.getAssignedDemand()!=null){
+                remainingDemand-=assign.getAssignedDemand();
             }
         }
         return remainingDemand<0?0:remainingDemand;

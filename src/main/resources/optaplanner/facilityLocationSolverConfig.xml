@@ -13,7 +13,7 @@
 
   <scoreDirectorFactory>
     <constraintProviderClass>cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint</constraintProviderClass>
-    <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+    <initializingScoreTrend>ANY</initializingScoreTrend>
   </scoreDirectorFactory>
 
   <termination>
@@ -27,7 +27,7 @@
   </constructionHeuristic>
 
   <localSearch>
-    <unionMoveSelector>
+    <!-- <unionMoveSelector>
       <changeMoveSelector>
         <valueSelector variableName="customer"/>
       </changeMoveSelector>
@@ -42,28 +42,30 @@
         <entitySelector>
           <entityClass>cn.keyvalues.optaplanner.solution.cflp.domain.Assign</entityClass>
         </entitySelector>
-        <!-- <secondaryEntitySelector>
+        <secondaryEntitySelector>
           <entityClass>cn.keyvalues.optaplanner.solution.cflp.domain.Assign</entityClass>
-        </secondaryEntitySelector> -->
+        </secondaryEntitySelector>
         <variableNameIncludes>
           <variableNameInclude>customer</variableNameInclude>
           <variableNameInclude>station</variableNameInclude>
           <variableNameInclude>assignedDemand</variableNameInclude>
         </variableNameIncludes>
       </swapMoveSelector>
-    </unionMoveSelector>
+    </unionMoveSelector> -->
 
-    <acceptor>
-      <simulatedAnnealingStartingTemperature>100hard/100medium/0soft</simulatedAnnealingStartingTemperature>
+    <!-- 后续根据使用效果调整 -->
+    <!-- 模拟退火 有时算出更好的解，但最后不会被acceptor所接受 -->
+
+    <!-- <acceptor>
+      <simulatedAnnealingStartingTemperature>20hard/20medium/20soft</simulatedAnnealingStartingTemperature>
     </acceptor>
+    <forager>
+      <acceptedCountLimit>1</acceptedCountLimit>
+    </forager> -->
   </localSearch>
 
   <!-- <acceptor>
     <lateAcceptanceSize>200</lateAcceptanceSize>
   </acceptor> -->
-
-  <!-- <forager>
-    <acceptedCountLimit>1</acceptedCountLimit>
-  </forager> -->
   
 </solver>
