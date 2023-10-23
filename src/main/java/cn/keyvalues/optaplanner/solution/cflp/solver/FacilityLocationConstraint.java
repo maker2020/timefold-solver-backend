@@ -21,7 +21,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
             noRestDemand(constraintFactory),
             greedyDemand(constraintFactory),
             lessStation(constraintFactory),
-            // 更好的是，加一个分配数不能超过总需求（浪费）的约束
+            noOverDemand(constraintFactory),
         };
     }
 
@@ -32,6 +32,17 @@ public class FacilityLocationConstraint implements ConstraintProvider {
         return constraintFactory.forEach(Assign.class)
                 .rewardConfigurableLong(assign->assign.getAssignedDemand())
                 .asConstraint(FacilityLocationConstraintConfig.GREEDY_DEMAND);
+    }
+
+    /**
+     * 不过度分配：分配量不能 大于 当前剩余需求量
+     */
+    Constraint noOverDemand(ConstraintFactory constraintFactory){
+        return constraintFactory.forEach(Assign.class)
+                .groupBy(Assign::getCustomer,ConstraintCollectors.sumLong(Assign::getAssignedDemand))
+                .filter((customer,totalAssign)->totalAssign>customer.getMaxDemand())
+                .penalizeConfigurableLong((c,s)->s-c.getMaxDemand())
+                .asConstraint(FacilityLocationConstraintConfig.NO_OVER_DEMAND);
     }
 
     /**
@@ -70,7 +81,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     }
 
     /**
-    * 容量约束
+    * 不超出服务站容量约束
     */
     Constraint serverStationCapicity(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Assign.class)

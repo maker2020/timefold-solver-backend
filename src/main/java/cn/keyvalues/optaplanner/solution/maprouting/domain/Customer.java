@@ -12,7 +12,6 @@ import com.alibaba.fastjson.annotation.JSONField;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
 import cn.keyvalues.optaplanner.geo.Point;
-import cn.keyvalues.optaplanner.solution.maprouting.service.impl.VisitorRoutingServiceImpl;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -20,6 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import static cn.keyvalues.optaplanner.utils.Utils.redisUtil;
 
 @PlanningEntity
 @Setter
@@ -79,7 +80,7 @@ public class Customer extends AbstractPersistable implements LocationAware{
                 .append(location.getPoint().toString())
                 .append(":").append(location.getTactics())
                 .toString();
-        Object optimalMap = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        Object optimalMap = redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
         return optimalMap==null?0:(long)((Map<String,Object>)optimalMap).get("optimalValue");
         // String key=sb.append(previousPoint.toString()).append("->").append(location.getPoint().toString()).toString();
         // return Main2.p2pOptimalValueMap.getOrDefault(key,0L);
@@ -101,7 +102,7 @@ public class Customer extends AbstractPersistable implements LocationAware{
                 .append(":").append(baseLocation.getTactics())
                 .toString();
         // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
-        Object optimalMap = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        Object optimalMap = redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
         return optimalMap==null?0:(long)((Map<String,Object>)optimalMap).get("optimalValue");
     }
 
@@ -120,7 +121,7 @@ public class Customer extends AbstractPersistable implements LocationAware{
                 .append(":").append(destination.getTactics())
                 .toString();
         // return VisitorRoutingController.p2pOptimalValueMap.getOrDefault(key,0L);
-        Object optimalMap = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+        Object optimalMap = redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
         return optimalMap==null?0:(long)((Map<String,Object>)optimalMap).get("optimalValue");
     }
 

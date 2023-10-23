@@ -13,7 +13,6 @@ import com.alibaba.fastjson.annotation.JSONField;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
 import cn.keyvalues.optaplanner.geo.Point;
-import cn.keyvalues.optaplanner.solution.maprouting.service.impl.VisitorRoutingServiceImpl;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -21,6 +20,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import static cn.keyvalues.optaplanner.utils.Utils.redisUtil;
 
 @PlanningEntity
 @Setter
@@ -78,7 +79,7 @@ public class Visitor extends AbstractPersistable implements LocationAware{
                     .append(customer.getLocation().getPoint().toString())
                     .append(":").append(customer.getLocation().getTactics())
                     .toString();
-            Object relatedMap = VisitorRoutingServiceImpl.redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
+            Object relatedMap = redisUtil.hget(RedisConstant.p2pOptimalValueMap,key);
             map.put(key, relatedMap);
             list.add(map);
         }

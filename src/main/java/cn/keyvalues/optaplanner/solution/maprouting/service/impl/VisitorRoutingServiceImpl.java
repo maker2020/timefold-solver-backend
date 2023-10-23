@@ -18,6 +18,7 @@ import org.optaplanner.core.api.solver.SolverStatus;
 import org.optaplanner.core.config.solver.SolverConfig;
 import org.optaplanner.core.config.solver.SolverManagerConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -35,15 +36,13 @@ import cn.keyvalues.optaplanner.solution.maprouting.domain.entity.SolutionEntity
 import cn.keyvalues.optaplanner.solution.maprouting.service.SolutionService;
 import cn.keyvalues.optaplanner.solution.maprouting.service.VisitorRoutingService;
 import cn.keyvalues.optaplanner.solution.maprouting.utils.CircularRefUtil;
-import cn.keyvalues.optaplanner.utils.RedisUtil;
+import static cn.keyvalues.optaplanner.utils.Utils.redisUtil;
 
 /**
- * 注：该求解实现类中的长期对象除DoS限制，后期应加额外守护清除机制
+ * 
  */
 @Service
 public class VisitorRoutingServiceImpl implements VisitorRoutingService{
-
-    public static RedisUtil redisUtil;
 
     private Map<UUID,SolverJob<VisitorRoutingSolution,UUID>> solverJobMap;
     private final SolverConfig solverConfig;
@@ -54,12 +53,11 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
     //
     private Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueue=new ConcurrentHashMap<>(); 
 
-    public VisitorRoutingServiceImpl(SolverManager<VisitorRoutingSolution, UUID> solverManager,SolverConfig solverConfig
-            ,BaiduDirection baiduDirection,RedisUtil redisUtil,SolutionService solutionService) {
+    public VisitorRoutingServiceImpl(@Qualifier("tspConfig") SolverConfig solverConfig
+            ,BaiduDirection baiduDirection,SolutionService solutionService) {
         solverJobMap=new ConcurrentHashMap<>();
         this.solverConfig = solverConfig;
         this.baiduDirection = baiduDirection;
-        VisitorRoutingServiceImpl.redisUtil=redisUtil;
         this.solutionService=solutionService;
     }
 
@@ -113,6 +111,9 @@ public class VisitorRoutingServiceImpl implements VisitorRoutingService{
             SolutionEntity solution=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
             solution.setStatus(SolverStatus.NOT_SOLVING.toString());
             solutionService.saveOrUpdate(solution);
+
+            // clear
+            
         }).start();
         // 可跟踪问题状态、最终解
         solverJobMap.put(problemID, solverJob);

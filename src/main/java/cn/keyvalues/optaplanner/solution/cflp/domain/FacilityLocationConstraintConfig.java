@@ -15,12 +15,19 @@ public class FacilityLocationConstraintConfig {
     public static final String GREEDY_DEMAND="greedy demand";
     public static final String LESS_STATION="less station";
     public static final String NO_REST_DEMAND="no rest demand";
+    public static final String NO_OVER_DEMAND="no over demand";
 
     /**
-     * 容量
+     * 不超出服务站容量
      */
     @ConstraintWeight(FACILITY_CAPACITY)
     HardMediumSoftLongScore facilityCapacity = HardMediumSoftLongScore.ofHard(1);
+
+    /**
+     * 不过度分配
+     */
+    @ConstraintWeight(NO_OVER_DEMAND)
+    HardMediumSoftLongScore noOverDemand=HardMediumSoftLongScore.ofSoft(1);
 
     /**
      * 服务半径

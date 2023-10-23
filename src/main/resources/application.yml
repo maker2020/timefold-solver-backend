@@ -18,3 +18,7 @@ mybatis-plus:
     # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
     # map-underscore-to-camel-case: true
+
+# 全限定名区分schema
+springdoc:
+  use-fqn: true

@@ -7,6 +7,8 @@ import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +30,7 @@ public class Customer extends AbstractPersistable{
     protected Location location;
 
     @InverseRelationShadowVariable(sourceVariableName = "customer")
+    @Schema(hidden = true)
     protected List<Assign> assignedStations=new ArrayList<>();
 
     public Customer(long id,long maxDemand,Location location){
@@ -36,11 +39,13 @@ public class Customer extends AbstractPersistable{
         this.maxDemand=maxDemand;
     }
 
+    @Hidden
     public boolean isAssigned(){
         return assignedStations.stream()
                 .anyMatch(assign->assign.getStation()!=null && assign.getAssignedDemand()!=null);
     }
 
+    @Hidden
     public long getRemainingDemand(){
         long remainingDemand=maxDemand;
         for (Assign assign : assignedStations) {

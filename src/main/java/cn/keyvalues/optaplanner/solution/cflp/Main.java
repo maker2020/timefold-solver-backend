@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import org.optaplanner.core.api.solver.SolutionManager;
-import org.optaplanner.core.api.solver.Solver;
+
 import org.optaplanner.core.api.solver.SolverFactory;
+import org.optaplanner.core.api.solver.SolverJob;
+import org.optaplanner.core.api.solver.SolverManager;
+
+import com.alibaba.fastjson.JSON;
 
 import cn.keyvalues.optaplanner.geo.Point;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
@@ -65,14 +67,33 @@ public class Main {
 
         solution.setAssigns(assigns);
 
+        // System.out.println(JSON.toJSONString(solution.getCustomers()));
+        // System.out.println(JSON.toJSONString(solution.getServerStations()));
+
         String configPath="optaplanner/facilityLocationSolverConfig.xml";
         SolverFactory<FacilityLocationSolution> solverFactory = SolverFactory.createFromXmlResource(
                 configPath);
-        SolutionManager<FacilityLocationSolution,HardMediumSoftLongScore> solutionManager=SolutionManager.create(solverFactory);
-        Solver<FacilityLocationSolution> solver = solverFactory.buildSolver();
-        FacilityLocationSolution resolved = solver.solve(solution);
-        // System.out.println(JSON.toJSONString(resolved));
-        var obj=solutionManager.explain(resolved);
-        System.out.println(obj);
+        SolverManager<FacilityLocationSolution,Long> solverManager=SolverManager.create(solverFactory);
+        SolverJob<FacilityLocationSolution,Long> solverJob=solverManager.solveAndListen(66L, (s)->solution, (update)->{
+            System.out.println("unbelievable");
+        },(finalRes)->{
+            System.out.println("impossible:"+solverManager.getSolverStatus(66L));
+        },(id,ex)->{
+            System.out.println("eeeeee rrrrr  rrrrr ooooo  rrrr");
+        });
+        try {
+            FacilityLocationSolution resultSolution=solverJob.getFinalBestSolution();
+            System.out.println("done ... ");
+            System.out.println(JSON.toJSONString(resultSolution));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // SolutionManager<FacilityLocationSolution,HardMediumSoftLongScore> solutionManager=SolutionManager.create(solverFactory);
+        // Solver<FacilityLocationSolution> solver = solverFactory.buildSolver();
+        // FacilityLocationSolution resolved = solver.solve(solution);
+        // // System.out.println(JSON.toJSONString(resolved));
+        // var obj=solutionManager.explain(resolved);
+        // System.out.println(obj);
     }
 }
