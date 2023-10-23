@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SolutionHelper {
 
-    private final Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueue; 
+    private final Map<UUID,ConcurrentLinkedDeque<Map<String,Object>>> solverSolutionQueueMap; 
     private final Map<UUID,SolverManager<?,UUID>> solverManagerMap;
 
     public static final String STATUS_KEY="status";
@@ -41,7 +41,7 @@ public class SolutionHelper {
     public static final long CLEAR_DELAY=600; // s
 
     public SolutionHelper(){
-        this.solverSolutionQueue=new ConcurrentHashMap<>(); 
+        this.solverSolutionQueueMap=new ConcurrentHashMap<>(); 
         this.solverManagerMap=new ConcurrentHashMap<>();
     }
 
@@ -58,7 +58,7 @@ public class SolutionHelper {
         SolverFactory<T> factory = SolverFactory.create(config);
         SolverManager<T,UUID> solverManager = SolverManager.create(factory);
         ConcurrentLinkedDeque<Map<String,Object>> syncQueue=new ConcurrentLinkedDeque<Map<String,Object>>();
-        solverSolutionQueue.put(problemID, syncQueue);
+        solverSolutionQueueMap.put(problemID, syncQueue);
         solverManagerMap.put(problemID, solverManager);
         Consumer<T> consumer=update->{
             Map<String,Object> newData=new HashMap<>();
@@ -77,7 +77,7 @@ public class SolutionHelper {
             ScheduledExecutorService executorService=Executors.newSingleThreadScheduledExecutor();
             executorService.schedule(()->{
                 // 清空管理对象
-                solverSolutionQueue.remove(problemID);
+                solverSolutionQueueMap.remove(problemID);
                 solverManagerMap.remove(problemID);
             }, CLEAR_DELAY, TimeUnit.SECONDS);
             try {
@@ -87,7 +87,7 @@ public class SolutionHelper {
         finalConsumer.andThen(resolvedConsumer);
         SolverJob<T,UUID> solverJob=solverManager.solveAndListen(problemID, 
                 r->initializedSolution, bestConsumer,finalConsumer,(pid,except)->{
-                    solverSolutionQueue.remove(problemID);
+                    solverSolutionQueueMap.remove(problemID);
                     solverManagerMap.remove(problemID);
                     log.error(pid.toString(),except);
                 });
@@ -102,23 +102,23 @@ public class SolutionHelper {
     public Map<String,Object> pollUpdate(UUID problemID, long intervalTime){
         // 拉取数据
         Map<String,Object> data=new HashMap<>();
-        ConcurrentLinkedDeque<Map<String,Object>> solveQueue=solverSolutionQueue.get(problemID);
+        ConcurrentLinkedDeque<Map<String,Object>> solveQueue=solverSolutionQueueMap.get(problemID);
         SolverManager<?,UUID> solverManager=(SolverManager<?,UUID>)solverManagerMap.get(problemID);
         Map<String,Object> problemData=solveQueue==null?null:solveQueue.poll();
         SolverStatus instaneousStatus;
         if(solverManager==null || solveQueue==null){
             instaneousStatus=SolverStatus.NOT_SOLVING;
-        }else if(solveQueue.isEmpty()){ // 如果求解完成必然有一个携带NOT_SOLVING的记录，否则其他都按active处理（NOT_SOLVING后都是无效轮询）
-            instaneousStatus=SolverStatus.SOLVING_ACTIVE;
         }else{
-            // 可能是 NOT_SOLVING｜ ACTIVE...NOT_SOLVING
-            instaneousStatus=(SolverStatus)problemData.get(STATUS_KEY);
-        }
-        if(problemData!=null){
-            if(problemData.get(UPDATED_KEY) instanceof CircularRefRelease ref){
-                data.put(SOLUTION_KEY, JSON.toJSONString(ref.releaseCircular(),SerializerFeature.DisableCircularReferenceDetect));
+            // 如果求解完成必然有一个携带NOT_SOLVING的记录（NOT_SOLVING后都是无效轮询）
+            if(problemData!=null){
+                instaneousStatus=(SolverStatus)problemData.get(STATUS_KEY);
+                if(problemData.get(UPDATED_KEY) instanceof CircularRefRelease ref){
+                    data.put(SOLUTION_KEY, JSON.toJSONString(ref.releaseCircular(),SerializerFeature.DisableCircularReferenceDetect));
+                }else{
+                    data.put(SOLUTION_KEY, JSON.toJSONString(problemData.get(UPDATED_KEY),SerializerFeature.DisableCircularReferenceDetect));
+                }
             }else{
-                data.put(SOLUTION_KEY, JSON.toJSONString(problemData.get(UPDATED_KEY),SerializerFeature.DisableCircularReferenceDetect));
+                instaneousStatus=SolverStatus.SOLVING_ACTIVE;
             }
         }
         data.put(STATUS_KEY, instaneousStatus);
@@ -132,7 +132,7 @@ public class SolutionHelper {
     }
 
     public ConcurrentLinkedDeque<Map<String, Object>> getSolutionQueue(UUID problemID) {
-        return solverSolutionQueue.get(problemID);
+        return solverSolutionQueueMap.get(problemID);
     }
 
     public SolverStatus getStatus(UUID problemID){

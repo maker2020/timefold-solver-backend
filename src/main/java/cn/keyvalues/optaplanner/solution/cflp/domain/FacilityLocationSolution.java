@@ -71,6 +71,7 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
     }
 
     private Map<String,Object> releaseCustomer(Customer customer){
+        if(customer==null) return null;
         Map<String,Object> c=new HashMap<>();
         c.put("remainingDemand", customer.getRemainingDemand());
         c.put("maxDemand", customer.getMaxDemand());
@@ -80,6 +81,7 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
     }
 
     private Map<String,Object> releaseStation(ServerStation station){
+        if(station==null) return null;
         Map<String,Object> s=new HashMap<>();
         s.put("usedCapacity", station.getUsedCapacity());
         s.put("maxCapacity", station.getMaxCapacity());
