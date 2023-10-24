@@ -71,9 +71,10 @@ public class SolutionHelper {
 
         Consumer<T> finalConsumer=(finalSolution)->{
             Map<String,Object> newData=new HashMap<>();
-            newData.put(STATUS_KEY, solverManager.getSolverStatus(problemID));
+            newData.put(STATUS_KEY, SolverStatus.NOT_SOLVING);
             newData.put(UPDATED_KEY, finalSolution);
             syncQueue.add(newData);
+            log.info("[problem:"+problemID+"] has been done");
             // 问题求解完后10分钟清理
             ScheduledExecutorService executorService=Executors.newSingleThreadScheduledExecutor();
             executorService.schedule(()->{
@@ -85,9 +86,9 @@ public class SolutionHelper {
                 executorService.awaitTermination(CLEAR_DELAY*2, TimeUnit.SECONDS);
             } catch (InterruptedException e) {}
         };
-        finalConsumer.andThen(resolvedConsumer);
+        Consumer<T> endConsumer=finalConsumer.andThen(resolvedConsumer);
         SolverJob<T,UUID> solverJob=solverManager.solveAndListen(problemID, 
-                r->initializedSolution, bestConsumerBegin,finalConsumer,(pid,except)->{
+                r->initializedSolution, bestConsumerBegin,endConsumer,(pid,except)->{
                     solverSolutionQueueMap.remove(problemID);
                     solverManagerMap.remove(problemID);
                     log.error(pid.toString(),except);
