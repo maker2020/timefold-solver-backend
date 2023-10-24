@@ -27,6 +27,11 @@ public class ServerStation extends AbstractPersistable {
     protected Location location;
     protected long maxCapacity;
     protected double radius;
+
+    /**
+     * 服务站等级，对应客户需求等级。服务站可服务的需求类型是向下兼容。
+     */
+    protected int demandLevel;
     
     /**
      * 求解器可以对此增删改
@@ -39,12 +44,13 @@ public class ServerStation extends AbstractPersistable {
     @ShadowVariable(sourceEntityClass = ServerStation.class,sourceVariableName = "assignedCustomers",variableListenerClass = StationUsedCapacityListener.class)
     protected Long usedCapacity;
 
-    public ServerStation(long id,Location location,long maxCapacity,double radius){
+    public ServerStation(long id,Location location,long maxCapacity,double radius,int demandLevel){
         super(id);
         this.location=location;
         this.maxCapacity=maxCapacity;
         this.radius=radius;
         this.usedCapacity=0L;
+        this.demandLevel=demandLevel;
     }
 
     @Hidden

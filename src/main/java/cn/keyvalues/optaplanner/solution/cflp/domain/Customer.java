@@ -31,6 +31,11 @@ public class Customer extends AbstractPersistable{
     protected long maxDemand;
     protected Location location;
 
+    /**
+     * 需求等级，对应服务站可服务等级。没确定上限，按越高越好
+     */
+    protected int demandLevel;
+
     @InverseRelationShadowVariable(sourceVariableName = "customer")
     @Schema(hidden = true)
     protected List<Assign> assignedStations=new ArrayList<>();
@@ -39,11 +44,12 @@ public class Customer extends AbstractPersistable{
     @Schema(hidden = true)
     protected Long remainingDemand;
 
-    public Customer(long id,long maxDemand,Location location){
+    public Customer(long id,long maxDemand,Location location,int demandLevel){
         super(id);
         this.location=location;
         this.maxDemand=maxDemand;
         this.remainingDemand=maxDemand;
+        this.demandLevel=demandLevel;
     }
 
     @Hidden

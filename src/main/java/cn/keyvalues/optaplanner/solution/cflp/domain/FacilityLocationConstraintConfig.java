@@ -16,6 +16,8 @@ public class FacilityLocationConstraintConfig {
     public static final String LESS_STATION="less station";
     public static final String NO_REST_DEMAND="no rest demand";
     public static final String NO_OVER_DEMAND="no over demand";
+    
+    public static final String MATCH_LEVEL="match level";
 
     /**
      * 不超出服务站容量
@@ -59,7 +61,11 @@ public class FacilityLocationConstraintConfig {
     @ConstraintWeight(NO_REST_DEMAND)
     HardMediumSoftLongScore noRestDemand=HardMediumSoftLongScore.ofHard(1);
 
-
+    /**
+     * 等级要匹配
+     */
+    @ConstraintWeight(MATCH_LEVEL)
+    HardMediumSoftLongScore matchLevel=HardMediumSoftLongScore.ofHard(1);
 
     /************ 预留扩展 ************/
 

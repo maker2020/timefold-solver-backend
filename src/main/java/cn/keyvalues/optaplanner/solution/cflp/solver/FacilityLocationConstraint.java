@@ -50,7 +50,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
      */
     Constraint noRestDemand(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Customer.class)
-                .filter(c->c.getRemainingDemand()!=0)
+                .filter(c->c.getRemainingDemand()!=null && c.getRemainingDemand()!=0)
                 .penalizeConfigurable()
                 .asConstraint(FacilityLocationConstraintConfig.NO_REST_DEMAND);
     }
