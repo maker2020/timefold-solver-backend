@@ -22,7 +22,18 @@ public class FacilityLocationConstraint implements ConstraintProvider {
             noOverDemand(constraintFactory),
             greedyDemand(constraintFactory), // 这个和很多因素关联考虑
             lessStation(constraintFactory),
+            matchLevel(constraintFactory),
         };
+    }
+    
+    /**
+     * 分配需求的等级与服务站等级匹配：服务站必须更高级
+     */
+    Constraint matchLevel(ConstraintFactory constraintFactory){
+        return constraintFactory.forEach(Assign.class)
+                .filter(assign->assign.getCustomer().getDemandLevel()>assign.getStation().getDemandLevel())
+                .penalizeConfigurable()
+                .asConstraint(FacilityLocationConstraintConfig.MATCH_LEVEL);
     }
 
     /**
