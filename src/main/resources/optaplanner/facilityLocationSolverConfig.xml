@@ -53,14 +53,23 @@
       </swapMoveSelector>
     </unionMoveSelector> -->
 
-    <!-- 后续根据使用效果调整 -->
-    <!-- 模拟退火 有时算出更好的解，但最后不会被acceptor所接受 -->
+    <!-- 根据使用效果调整 -->
+    <!-- 默认会采用模拟退火 有时算出更好的解，但最后不会被acceptor所接受 -->
+
+    <!-- <localSearchType>TABU_SEARCH</localSearchType> -->
 
     <!-- <acceptor>
-      <simulatedAnnealingStartingTemperature>20hard/20medium/20soft</simulatedAnnealingStartingTemperature>
+      <entityTabuSize>7</entityTabuSize>
     </acceptor>
     <forager>
-      <acceptedCountLimit>1</acceptedCountLimit>
+      <acceptedCountLimit>1000</acceptedCountLimit>
+    </forager> -->
+    
+    <!-- <acceptor>
+      <simulatedAnnealingStartingTemperature>1hard/2medium/40soft</simulatedAnnealingStartingTemperature>
+    </acceptor>
+    <forager>
+      <acceptedCountLimit>4</acceptedCountLimit>
     </forager> -->
   </localSearch>
 

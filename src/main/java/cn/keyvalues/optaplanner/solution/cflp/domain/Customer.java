@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
+import org.optaplanner.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
+import cn.keyvalues.optaplanner.solution.cflp.solver.RemainingDemandListener;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -33,28 +35,21 @@ public class Customer extends AbstractPersistable{
     @Schema(hidden = true)
     protected List<Assign> assignedStations=new ArrayList<>();
 
+    @ShadowVariable(sourceEntityClass = Customer.class,sourceVariableName = "assignedStations",variableListenerClass = RemainingDemandListener.class)
+    @Schema(hidden = true)
+    protected Long remainingDemand;
+
     public Customer(long id,long maxDemand,Location location){
         super(id);
         this.location=location;
         this.maxDemand=maxDemand;
+        this.remainingDemand=maxDemand;
     }
 
     @Hidden
     public boolean isAssigned(){
         return assignedStations.stream()
                 .anyMatch(assign->assign.getStation()!=null && assign.getAssignedDemand()!=null);
-    }
-
-    @Hidden
-    public long getRemainingDemand(){
-        long remainingDemand=maxDemand;
-        for (Assign assign : assignedStations) {
-            // 无效代码:assign.getCustomer()!=null && assign.getCustomer()==this 
-            if(assign.getStation()!=null && assign.getAssignedDemand()!=null){
-                remainingDemand-=assign.getAssignedDemand();
-            }
-        }
-        return remainingDemand<0?0:remainingDemand;
     }
 
 }

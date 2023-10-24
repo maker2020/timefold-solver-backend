@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
+import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
+import org.optaplanner.core.api.solver.SolutionManager;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.optaplanner.core.api.solver.SolverJob;
 import org.optaplanner.core.api.solver.SolverManager;
@@ -59,7 +60,7 @@ public class Main {
         // 结果未知只能按最大区限，所以规划变量nullable=true
         // 即 m * n
         List<Assign> assigns=new ArrayList<>();
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < solution.getCustomers().size()*solution.getServerStations().size(); i++) {
             Assign assign = new Assign(i);
             // Initialize other properties of Assign if needed
             assigns.add(assign);
@@ -73,27 +74,28 @@ public class Main {
         String configPath="optaplanner/facilityLocationSolverConfig.xml";
         SolverFactory<FacilityLocationSolution> solverFactory = SolverFactory.createFromXmlResource(
                 configPath);
+        SolutionManager<FacilityLocationSolution,HardMediumSoftLongScore> solutionManager=SolutionManager.create(solverFactory);
         SolverManager<FacilityLocationSolution,Long> solverManager=SolverManager.create(solverFactory);
+        List<FacilityLocationSolution> list=new ArrayList<>();
         SolverJob<FacilityLocationSolution,Long> solverJob=solverManager.solveAndListen(66L, (s)->solution, (update)->{
-            System.out.println("unbelievable");
+            list.add(update);
         },(finalRes)->{
             System.out.println("impossible:"+solverManager.getSolverStatus(66L));
+            list.add(finalRes);
         },(id,ex)->{
             System.out.println("eeeeee rrrrr  rrrrr ooooo  rrrr");
         });
         try {
             FacilityLocationSolution resultSolution=solverJob.getFinalBestSolution();
+            // System.out.println(list);
             System.out.println("done ... ");
+            // System.out.println(JSON.toJSONString(resolved));
+            var obj=solutionManager.explain(resultSolution);
+            System.out.println(obj);
             System.out.println(JSON.toJSONString(resultSolution));
         } catch (Exception e) {
             e.printStackTrace();
         }
         
-        // SolutionManager<FacilityLocationSolution,HardMediumSoftLongScore> solutionManager=SolutionManager.create(solverFactory);
-        // Solver<FacilityLocationSolution> solver = solverFactory.buildSolver();
-        // FacilityLocationSolution resolved = solver.solve(solution);
-        // // System.out.println(JSON.toJSONString(resolved));
-        // var obj=solutionManager.explain(resolved);
-        // System.out.println(obj);
     }
 }

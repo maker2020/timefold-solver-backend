@@ -54,7 +54,7 @@ public class SolutionHelper {
      * @param resolvedConsumer 求解完成的回调
      */
     public <T> SolverJob<T,UUID> solveAsync(T initializedSolution,SolverConfig config,UUID problemID,
-            Consumer<? super T> bestSolutionConsumerAfter,Consumer<? super T> resolvedConsumer){
+            Consumer<T> bestConsumerBefore,Consumer<? super T> bestSolutionConsumerAfter,Consumer<? super T> resolvedConsumer){
         SolverFactory<T> factory = SolverFactory.create(config);
         SolverManager<T,UUID> solverManager = SolverManager.create(factory);
         ConcurrentLinkedDeque<Map<String,Object>> syncQueue=new ConcurrentLinkedDeque<Map<String,Object>>();
@@ -67,6 +67,7 @@ public class SolutionHelper {
             syncQueue.add(newData);
         };
         Consumer<T> bestConsumer=consumer.andThen(bestSolutionConsumerAfter);
+        Consumer<T> bestConsumerBegin=bestConsumerBefore.andThen(bestConsumer);
 
         Consumer<T> finalConsumer=(finalSolution)->{
             Map<String,Object> newData=new HashMap<>();
@@ -86,7 +87,7 @@ public class SolutionHelper {
         };
         finalConsumer.andThen(resolvedConsumer);
         SolverJob<T,UUID> solverJob=solverManager.solveAndListen(problemID, 
-                r->initializedSolution, bestConsumer,finalConsumer,(pid,except)->{
+                r->initializedSolution, bestConsumerBegin,finalConsumer,(pid,except)->{
                     solverSolutionQueueMap.remove(problemID);
                     solverManagerMap.remove(problemID);
                     log.error(pid.toString(),except);

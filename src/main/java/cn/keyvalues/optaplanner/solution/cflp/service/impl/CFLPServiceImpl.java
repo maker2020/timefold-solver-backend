@@ -38,9 +38,11 @@ public class CFLPServiceImpl implements CFLPService{
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));
         // 随机问题ID，用于跟踪问题
         UUID problemID=UUID.randomUUID();
-        solutionHelper.solveAsync(initializedSolution, solverConfig, problemID, (update)->{
+        solutionHelper.solveAsync(initializedSolution, solverConfig, problemID, update->{
+            // 求解记录放入队列前的处理
+        }, update->{
             // 持久化存储的更新...
-        }, (lastSolution)->{
+        }, lastSolution->{
             // 持久化存储的更新...
         });
         Map<String,Object> data=new HashMap<>();

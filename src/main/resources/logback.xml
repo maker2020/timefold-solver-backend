@@ -9,6 +9,7 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
+    <!-- trace -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>

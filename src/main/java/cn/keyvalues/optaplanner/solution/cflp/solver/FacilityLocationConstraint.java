@@ -15,13 +15,13 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-            serverStationCapicity(constraintFactory),
-            serverRadius(constraintFactory),
-            uniqueEntity(constraintFactory),
             noRestDemand(constraintFactory),
-            greedyDemand(constraintFactory),
-            lessStation(constraintFactory),
+            serverStationCapicity(constraintFactory),
+            uniqueEntity(constraintFactory),
             noOverDemand(constraintFactory),
+            lessStation(constraintFactory),
+            serverRadius(constraintFactory),
+            greedyDemand(constraintFactory), // 这个和lessStation的关系密切
         };
     }
 

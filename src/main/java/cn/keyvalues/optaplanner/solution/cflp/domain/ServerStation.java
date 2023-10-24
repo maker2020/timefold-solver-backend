@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
+import org.optaplanner.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
+import cn.keyvalues.optaplanner.solution.cflp.solver.StationUsedCapacityListener;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,19 +35,16 @@ public class ServerStation extends AbstractPersistable {
     @Hidden
     protected List<Assign> assignedCustomers=new ArrayList<>();
 
+    @Hidden
+    @ShadowVariable(sourceEntityClass = ServerStation.class,sourceVariableName = "assignedCustomers",variableListenerClass = StationUsedCapacityListener.class)
+    protected Long usedCapacity;
+
     public ServerStation(long id,Location location,long maxCapacity,double radius){
         super(id);
         this.location=location;
         this.maxCapacity=maxCapacity;
         this.radius=radius;
-    }
-
-    @Hidden
-    public long getUsedCapacity(){
-        // 两个含义：分配即使用了；分配且利用即使用了。目前是前者
-        return assignedCustomers.stream().filter(assign->assign.getCustomer()!=null 
-                && assign.getAssignedDemand()!=null)
-                .mapToLong(assign->assign.getAssignedDemand()).sum();
+        this.usedCapacity=0L;
     }
 
     @Hidden

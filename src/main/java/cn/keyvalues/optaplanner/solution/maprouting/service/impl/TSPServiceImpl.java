@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.optaplanner.core.api.solver.SolverStatus;
 import org.optaplanner.core.config.solver.SolverConfig;
 import org.optaplanner.core.config.solver.termination.TerminationConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.constant.RedisConstant;
@@ -57,7 +60,14 @@ public class TSPServiceImpl implements TSPService{
         solutionService.save(solutionEntity);
         // 求解
         solutionHelper.solveAsync(initializedSolution, solverConfig, problemID, update->{
-
+            // 为每个visitor的optimalMap字段赋值：即获取访问者的路径API数据
+            update.getVisitorList().forEach(v->v.arrangeOptimalRelatedMap());
+        }, update->{
+            // 使数据库保持最新数据状态
+            SolutionEntity entity = solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+            entity.setVisitorsJson(update.getVisitorList());
+            entity.setStatus(SolverStatus.SOLVING_ACTIVE.toString());
+            solutionService.saveOrUpdate(entity);
         }, finalSolution->{
 
         });
