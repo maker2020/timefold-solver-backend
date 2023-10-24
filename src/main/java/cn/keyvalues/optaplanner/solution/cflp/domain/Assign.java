@@ -2,8 +2,10 @@ package cn.keyvalues.optaplanner.solution.cflp.domain;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import org.optaplanner.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
+import cn.keyvalues.optaplanner.solution.cflp.solver.shadow.DistanceListener;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,20 +26,16 @@ public class Assign extends AbstractPersistable{
     @PlanningVariable(valueRangeProviderRefs = "demandChoices",nullable = true)
     protected Long assignedDemand;
 
+    @ShadowVariable(sourceVariableName = "customer",variableListenerClass = DistanceListener.class,sourceEntityClass = Assign.class)
+    @ShadowVariable(sourceVariableName = "station",variableListenerClass = DistanceListener.class,sourceEntityClass = Assign.class)
+    protected Double betweenDistance;
+
     // 如果两个shadowvar共同监听不行，则在此加一个规划变量
 
     public Assign(){}
 
     public Assign(long id){
         super(id);
-    }
-
-    public double getBetweenDistance(){
-        if(customer!=null && customer.getLocation()!=null
-                && station!=null && station.getLocation()!=null){
-            return customer.getLocation().getDistanceTo(station.getLocation());
-        }
-        return -1;
     }
     
 }

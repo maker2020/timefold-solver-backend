@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.solution.cflp.solver;
+package cn.keyvalues.optaplanner.solution.cflp.solver.shadow;
 
 import org.optaplanner.core.api.domain.variable.VariableListener;
 import org.optaplanner.core.api.score.director.ScoreDirector;

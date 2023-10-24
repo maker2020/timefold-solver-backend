@@ -51,7 +51,7 @@ public class FacilityLocationConstraintConfig {
      * 服务站数量尽可能少
      */
     @ConstraintWeight(LESS_STATION)
-    HardMediumSoftLongScore lessStation=HardMediumSoftLongScore.ofMedium(1);
+    HardMediumSoftLongScore lessStation=HardMediumSoftLongScore.ofSoft(1);
 
     /**
      * 不剩余需求

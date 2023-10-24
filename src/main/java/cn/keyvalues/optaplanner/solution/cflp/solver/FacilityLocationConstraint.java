@@ -18,10 +18,10 @@ public class FacilityLocationConstraint implements ConstraintProvider {
             noRestDemand(constraintFactory),
             serverStationCapicity(constraintFactory),
             uniqueEntity(constraintFactory),
-            noOverDemand(constraintFactory),
-            lessStation(constraintFactory),
             serverRadius(constraintFactory),
-            greedyDemand(constraintFactory), // 这个和lessStation的关系密切
+            noOverDemand(constraintFactory),
+            greedyDemand(constraintFactory), // 这个和很多因素关联考虑
+            lessStation(constraintFactory),
         };
     }
 
@@ -97,7 +97,8 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     Constraint serverRadius(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Assign.class)
                 .filter(assign->assign.getStation().getRadius()<assign.getBetweenDistance())
-                .penalizeConfigurableLong(assign->(long)(assign.getBetweenDistance()-assign.getStation().getRadius()))
+                // .penalizeConfigurableLong(assign->(long)(assign.getBetweenDistance()-assign.getStation().getRadius()))
+                .penalizeConfigurable()
                 .asConstraint(FacilityLocationConstraintConfig.SERVER_RADIUS);
     }
     

@@ -41,7 +41,7 @@ public class Main {
         // // 可被优化删减的服务站
         stations.add(new ServerStation(99, new Location(99, new Point(25, 0)), 20, 100));
         
-        // stations.add(new ServerStation(0, new Location(0, new Point(0, 0)), 20, 15));
+        // stations.add(new ServerStation(0, new Location(0, new Point(0, 0)), 20, 1));
         // stations.add(new ServerStation(2, new Location(2, new Point(20, 0)), 20, 15));
 
         solution.setServerStations(stations);

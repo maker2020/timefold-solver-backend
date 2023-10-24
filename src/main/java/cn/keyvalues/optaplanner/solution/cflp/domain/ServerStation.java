@@ -8,7 +8,7 @@ import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
 import org.optaplanner.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.solution.cflp.solver.StationUsedCapacityListener;
+import cn.keyvalues.optaplanner.solution.cflp.solver.shadow.StationUsedCapacityListener;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
