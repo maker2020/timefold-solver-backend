@@ -76,6 +76,7 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
         c.put("remainingDemand", customer.getRemainingDemand());
         c.put("maxDemand", customer.getMaxDemand());
         c.put("location", customer.getLocation());
+        c.put("id", customer.getId());
         // c.put(null, customer.get)
         return c;
     }
@@ -87,6 +88,7 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
         s.put("maxCapacity", station.getMaxCapacity());
         s.put("location", station.getLocation());
         s.put("radius", station.getRadius());
+        s.put("id", station.getId());
         // s.put("", station.get)
         return s;
     }
