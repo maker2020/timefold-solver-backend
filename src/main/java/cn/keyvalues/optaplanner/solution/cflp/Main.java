@@ -98,6 +98,7 @@ public class Main {
             FacilityLocationSolution resultSolution=solverJob.getFinalBestSolution();
             // System.out.println(list);
             System.out.println("done ... ");
+            solutionManager.update(resultSolution);
             // System.out.println(JSON.toJSONString(resolved));
             var obj=solutionManager.explain(resultSolution);
             System.out.println(obj);

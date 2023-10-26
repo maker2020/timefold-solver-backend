@@ -9,8 +9,9 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <!-- trace -->
-    <root level="INFO">
+    <!-- trace debug --> 
+    <!-- 当设置较低日志等级，降低速度会影响结果 -->
+    <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

@@ -11,12 +11,12 @@ public class RemainingDemandListener implements VariableListener<FacilityLocatio
 
     @Override
     public void beforeEntityAdded(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer entity) {
-
+        
     }
 
     @Override
     public void afterEntityAdded(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer entity) {
-
+        updateRemainingDemand(scoreDirector, entity);
     }
 
     @Override
@@ -26,19 +26,24 @@ public class RemainingDemandListener implements VariableListener<FacilityLocatio
 
     @Override
     public void afterEntityRemoved(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer entity) {
-     
+        // above methods won't be called in shadow var listener
     }
 
     @Override
     public void beforeVariableChanged(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer entity) {
-       
+        
     }
 
     @Override
     public void afterVariableChanged(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer customer) {
-        if(customer==null){
-            return;
-        }
+        updateRemainingDemand(scoreDirector, customer);
+    }
+
+    private void updateRemainingDemand(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer customer){
+        // if(customer==null){
+        //     return;
+        // }
+        
         long remainingDemand=customer.getMaxDemand();
         for (Assign assign : customer.getAssignedStations()) {
             if(assign.getStation()!=null && assign.getAssignedDemand()!=null){
@@ -49,6 +54,7 @@ public class RemainingDemandListener implements VariableListener<FacilityLocatio
         scoreDirector.beforeVariableChanged(customer, "remainingDemand");
         customer.setRemainingDemand(remainingDemand);
         scoreDirector.afterVariableChanged(customer, "remainingDemand");
+        
     }
 
     // 记录：之前的普通实现。此处用影子变量才刷新分数，或者说影子变量适合参与约束计算
