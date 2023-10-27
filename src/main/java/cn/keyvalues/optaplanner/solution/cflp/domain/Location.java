@@ -1,7 +1,5 @@
 package cn.keyvalues.optaplanner.solution.cflp.domain;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import cn.keyvalues.optaplanner.geo.Point;
 import lombok.Getter;
@@ -9,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@PlanningEntity
 @NoArgsConstructor
 @Setter
 @Getter
