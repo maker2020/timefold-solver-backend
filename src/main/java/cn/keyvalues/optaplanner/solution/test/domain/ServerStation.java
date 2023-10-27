@@ -3,9 +3,9 @@ package cn.keyvalues.optaplanner.solution.test.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
-import org.optaplanner.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import cn.keyvalues.optaplanner.solution.test.solver.RemainingCapacityListener;

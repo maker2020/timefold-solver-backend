@@ -1,8 +1,8 @@
 package cn.keyvalues.optaplanner.solution.cflp.domain;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.PlanningVariable;
-import org.optaplanner.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import cn.keyvalues.optaplanner.solution.cflp.solver.shadow.DistanceListener;

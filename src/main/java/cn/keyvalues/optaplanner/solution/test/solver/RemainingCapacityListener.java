@@ -2,8 +2,8 @@ package cn.keyvalues.optaplanner.solution.test.solver;
 
 import java.util.List;
 
-import org.optaplanner.core.api.domain.variable.VariableListener;
-import org.optaplanner.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 import cn.keyvalues.optaplanner.solution.test.domain.ServerStation;
 import cn.keyvalues.optaplanner.solution.test.domain.Customer;

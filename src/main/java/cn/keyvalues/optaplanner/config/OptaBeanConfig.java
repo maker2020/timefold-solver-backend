@@ -1,6 +1,6 @@
 package cn.keyvalues.optaplanner.config;
 
-import org.optaplanner.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.SolverConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

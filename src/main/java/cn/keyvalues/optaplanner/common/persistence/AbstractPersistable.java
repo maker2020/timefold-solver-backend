@@ -1,6 +1,6 @@
 package cn.keyvalues.optaplanner.common.persistence;
 
-import org.optaplanner.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

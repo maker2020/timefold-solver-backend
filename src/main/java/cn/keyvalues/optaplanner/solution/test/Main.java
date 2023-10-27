@@ -3,8 +3,8 @@ package cn.keyvalues.optaplanner.solution.test;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.optaplanner.core.api.solver.Solver;
-import org.optaplanner.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.SolverFactory;
 
 import com.alibaba.fastjson.JSON;
 

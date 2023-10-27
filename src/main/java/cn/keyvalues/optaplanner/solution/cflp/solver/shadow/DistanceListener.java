@@ -1,7 +1,7 @@
 package cn.keyvalues.optaplanner.solution.cflp.solver.shadow;
 
-import org.optaplanner.core.api.domain.variable.VariableListener;
-import org.optaplanner.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;

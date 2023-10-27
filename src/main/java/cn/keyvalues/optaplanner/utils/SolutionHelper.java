@@ -10,11 +10,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.optaplanner.core.api.solver.SolverFactory;
-import org.optaplanner.core.api.solver.SolverJob;
-import org.optaplanner.core.api.solver.SolverManager;
-import org.optaplanner.core.api.solver.SolverStatus;
-import org.optaplanner.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.api.solver.SolverStatus;
+import ai.timefold.solver.core.config.solver.SolverConfig;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;

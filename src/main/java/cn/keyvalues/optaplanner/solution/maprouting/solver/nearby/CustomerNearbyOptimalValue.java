@@ -1,6 +1,6 @@
 package cn.keyvalues.optaplanner.solution.maprouting.solver.nearby;
 
-import org.optaplanner.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Customer;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.LocationAware;

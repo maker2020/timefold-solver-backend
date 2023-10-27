@@ -2,10 +2,10 @@ package cn.keyvalues.optaplanner.solution.maprouting.domain;
 
 import java.util.Map;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.InverseRelationShadowVariable;
-import org.optaplanner.core.api.domain.variable.NextElementShadowVariable;
-import org.optaplanner.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 
 import com.alibaba.fastjson.annotation.JSONField;
 

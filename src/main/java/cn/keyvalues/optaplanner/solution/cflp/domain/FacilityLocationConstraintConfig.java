@@ -1,8 +1,8 @@
 package cn.keyvalues.optaplanner.solution.cflp.domain;
 
-import org.optaplanner.core.api.domain.constraintweight.ConstraintConfiguration;
-import org.optaplanner.core.api.domain.constraintweight.ConstraintWeight;
-import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 
 @ConstraintConfiguration
 public class FacilityLocationConstraintConfig {
