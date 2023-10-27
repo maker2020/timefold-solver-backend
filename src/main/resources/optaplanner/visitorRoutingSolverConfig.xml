@@ -25,7 +25,8 @@
     <termination>
       <unimprovedSecondsSpentLimit>120</unimprovedSecondsSpentLimit>
     </termination>
-    <unionMoveSelector>
+    <!-- timefold community version remove these nearby selection,it not like optaplanner -->
+    <!-- <unionMoveSelector>
       <listChangeMoveSelector>
         <valueSelector id="1"/>
         <destinationSelector>
@@ -83,7 +84,7 @@
           </nearbySelection>
         </valueSelector>
       </kOptListMoveSelector>
-    </unionMoveSelector>
+    </unionMoveSelector> -->
     <!-- 需要稳定展示解，可以打开该配置 -->
     <!-- 配置备选解阀值 -->
     <acceptor>
