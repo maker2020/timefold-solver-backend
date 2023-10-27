@@ -1,5 +1,6 @@
 package cn.keyvalues.optaplanner.solution.cflp.controller;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,13 @@ public class SolutionController {
             result=Result.failed(CommonConstant.FAILED,e.getMessage());
         }
         return result;
+    }
+
+    @GetMapping("/terminalProblem")
+    @Operation(summary = "立即终止问题并获取结果")
+    public Result<?> terminalProblem(@RequestParam String problemID){
+        Map<String,Object> data = cflpService.terminalProblem(UUID.fromString(problemID),false);
+        return Result.OK(data);
     }
 
 }

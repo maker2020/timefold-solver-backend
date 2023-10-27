@@ -94,5 +94,10 @@ public class CFLPServiceImpl implements CFLPService{
 
         return solution;
     }
+
+    @Override
+    public Map<String, Object> terminalProblem(UUID problemID, boolean save) {
+        return solutionHelper.terminalProblem(problemID, null, null);
+    }
     
 }

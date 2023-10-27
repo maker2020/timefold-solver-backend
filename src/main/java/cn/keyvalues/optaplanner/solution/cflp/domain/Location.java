@@ -19,8 +19,7 @@ public class Location extends AbstractPersistable{
     // Approximate Metric Equivalents for Degrees. At the equator for longitude and for latitude anywhere,
     // the following approximations are valid: 1° = 111 km (or 60 nautical miles) 0.1° = 11.1 km.
     
-    // 注释掉，demo不考虑角度
-    // public static final double METERS_PER_DEGREE = 111_000;
+    public static final double METERS_PER_DEGREE = 111_000;
     
     protected String name=null;
     protected Point point;
@@ -37,8 +36,8 @@ public class Location extends AbstractPersistable{
     public long getDistanceTo(Location other) {
         double latitudeDiff = other.point.latitude - this.point.latitude;
         double longitudeDiff = other.point.longitude - this.point.longitude;
-        // return (long) Math.ceil(Math.sqrt(latitudeDiff * latitudeDiff + longitudeDiff * longitudeDiff) * METERS_PER_DEGREE);
-        return (long)Math.sqrt(latitudeDiff * latitudeDiff + longitudeDiff * longitudeDiff);
+        return (long) Math.ceil(Math.sqrt(latitudeDiff * latitudeDiff + longitudeDiff * longitudeDiff) * METERS_PER_DEGREE);
+        // return (long)Math.sqrt(latitudeDiff * latitudeDiff + longitudeDiff * longitudeDiff);
     }
 
 }
