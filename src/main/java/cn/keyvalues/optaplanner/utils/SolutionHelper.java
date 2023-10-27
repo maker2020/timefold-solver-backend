@@ -142,4 +142,33 @@ public class SolutionHelper {
         return obj==null?SolverStatus.NOT_SOLVING:solverManagerMap.get(problemID).getSolverStatus(problemID);
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> Map<String,Object> terminalProblem(UUID problemID,Class<T> type,Consumer<T> finalSolutionConsumer){
+        Map<String,Object> result=null;
+        // 判断问题不存在就返回null
+        if(!solverManagerMap.containsKey(problemID)){
+            return null;
+        }
+        solverManagerMap.get(problemID).terminateEarly(problemID);
+        Map<String,Object> lastSolutionData = solverSolutionQueueMap.get(problemID).peekLast();
+        if(lastSolutionData==null) return null;
+        result=new HashMap<>();
+        T solution = (T)lastSolutionData.get(UPDATED_KEY);
+        
+        if(finalSolutionConsumer!=null){
+            finalSolutionConsumer.accept(solution);
+        }
+
+        if(solution instanceof CircularRefRelease ref){
+            result.put(SOLUTION_KEY, JSON.toJSONString(ref.releaseCircular(),SerializerFeature.DisableCircularReferenceDetect));
+        }else{
+            result.put(SOLUTION_KEY, JSON.toJSONString(solution,SerializerFeature.DisableCircularReferenceDetect));
+        }
+        result.put(STATUS_KEY, SolverStatus.NOT_SOLVING);
+
+        solverManagerMap.remove(problemID);
+        solverSolutionQueueMap.remove(problemID);
+        return result;
+    }
+
 }

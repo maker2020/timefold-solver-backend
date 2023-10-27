@@ -64,7 +64,7 @@ public class VisitorRoutingSolution extends AbstractPersistable implements Circu
      * @param extraData 额外数据。例如API策略，计算时间限时
      * @return solution json data
      */
-    private Map<String,Object> getNoEachReferenceSolution(VisitorRoutingSolution solution_,Map<String,Object> extraData){
+    public static Map<String,Object> getNoEachReferenceSolution(VisitorRoutingSolution solution_,Map<String,Object> extraData){
         Map<String,Object> solution=new HashMap<>();
         // solution输入事实
         if(extraData!=null){
@@ -77,7 +77,7 @@ public class VisitorRoutingSolution extends AbstractPersistable implements Circu
         return solution;
     }
     
-    private String getNoEachReferenceCustomers(List<Customer> customers){
+    public static String getNoEachReferenceCustomers(List<Customer> customers){
         List<Map<String,Object>> customerList_=new ArrayList<>();
         for(Customer c:customers){
             Map<String,Object> customer=new HashMap<>();
@@ -88,7 +88,7 @@ public class VisitorRoutingSolution extends AbstractPersistable implements Circu
         return JSON.toJSONString(customerList_,SerializerFeature.DisableCircularReferenceDetect);
     }
 
-    private String getNoEachReferenceVisitors(List<Visitor> visitors){
+    public static String getNoEachReferenceVisitors(List<Visitor> visitors){
         List<Map<String,Object>> visitorList_=new ArrayList<>();
         for(Visitor v:visitors){
             Map<String,Object> visitor=new HashMap<>();

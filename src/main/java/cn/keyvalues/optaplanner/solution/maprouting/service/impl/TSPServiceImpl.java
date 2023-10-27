@@ -1,6 +1,7 @@
 package cn.keyvalues.optaplanner.solution.maprouting.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -69,14 +70,18 @@ public class TSPServiceImpl implements TSPService{
             entity.setStatus(SolverStatus.SOLVING_ACTIVE.toString());
             solutionService.saveOrUpdate(entity);
         }, finalSolution->{
-
+            SolutionEntity solution=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+            solution.setStatus(SolverStatus.NOT_SOLVING.toString());
+            solutionService.saveOrUpdate(solution);
         });
-        return null;
+        Map<String,Object> data=new HashMap<>();
+        data.put("problemID", problemID.toString());
+        return Result.OK("请求成功！正在后台处理...", data);
     }
 
     @Override
     public Map<String, Object> pollUpdate(UUID problemID, long intervalTime) throws Exception {
-        return null;
+        return solutionHelper.pollUpdate(problemID, intervalTime);
     }
 
     private VisitorRoutingSolution generateSolution(ProblemInputVo problemInputVo){
@@ -171,6 +176,46 @@ public class TSPServiceImpl implements TSPService{
                 redisUtil.hset(RedisConstant.p2pOptimalValueMap, key1, optimalMap, 1800);
             }
         }
+    }
+
+    @Override
+    public Map<String, Object> terminalProblem(UUID problemID,boolean save) {
+        if(!save) {
+            return solutionHelper.terminalProblem(problemID, null, null);
+        } else {
+            return solutionHelper.terminalProblem(problemID,VisitorRoutingSolution.class, solution->{
+                    // 更新终止结果至数据库
+                    SolutionEntity entity=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+                    entity.setStatus(SolverStatus.NOT_SOLVING.toString());
+                    entity.setVisitorsJson(solution.getVisitorList());
+                    solutionService.saveOrUpdate(entity);
+            });
+        }
+    }
+
+    @Override
+    public List<Map<String, Object>> listProblem() {
+        List<Map<String,Object>> problemList=new ArrayList<>();
+        List<SolutionEntity> list = solutionService.list();
+        for(SolutionEntity entity:list){
+            Map<String,Object> solution=new HashMap<>();
+            solution.put("problemID", entity.getProblemId());
+            solution.put("problemName", entity.getProblemName());
+            solution.put("score", entity.getScore());
+            solution.put("status", entity.getStatus());
+            solution.put("timeLimit", entity.getTimeLimit());
+            solution.put("customers", VisitorRoutingSolution.getNoEachReferenceCustomers(entity.getCustomersJson()));
+            solution.put("visitors", VisitorRoutingSolution.getNoEachReferenceVisitors(entity.getVisitorsJson()));
+            problemList.add(solution);
+        }
+        return problemList;
+    }
+
+    @Override
+    public boolean deleteProblem(UUID problemID) {
+        terminalProblem(problemID,false);
+        boolean deleted=solutionService.remove(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+        return deleted;
     }
     
 }
