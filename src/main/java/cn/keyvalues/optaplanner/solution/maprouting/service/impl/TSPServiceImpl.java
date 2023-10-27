@@ -43,6 +43,7 @@ public class TSPServiceImpl implements TSPService{
         this.solverConfig = solverConfig;
         this.baiduDirection = baiduDirection;
         this.solutionService=solutionService;
+        this.solutionHelper=solutionHelper;
     }
 
     @Override
