@@ -32,6 +32,8 @@ public class ServerStation extends AbstractPersistable {
      * 服务站等级，对应客户需求等级。服务站可服务的需求类型是向下兼容。
      */
     protected int demandLevel;
+
+    protected String color;
     
     /**
      * 求解器可以对此增删改

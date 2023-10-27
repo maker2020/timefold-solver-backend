@@ -35,7 +35,7 @@ public class Main {
             // customers.add(new Customer(3, 10, new Location(3, new Point(30, 0))));
             // customers.add(new Customer(4, 10, new Location(4, new Point(40, 0))));
             
-            customers.add(new Customer(1, 25, new Location(1,new Point(10, 0)),3));
+            customers.add(new Customer(1, 20, new Location(1,new Point(10, 0)),3));
 
             solution.setCustomers(customers);
 
@@ -48,7 +48,7 @@ public class Main {
             // stations.add(new ServerStation(99, new Location(99, new Point(25, 0)), 20, 100));
             
             stations.add(new ServerStation(0, new Location(0, new Point(0, 0)), 20, 15,4));
-            stations.add(new ServerStation(2, new Location(2, new Point(20, 0)), 20, 15,3));
+            stations.add(new ServerStation(2, new Location(2, new Point(12, 0)), 20, 15,3));
 
             solution.setServerStations(stations);
 

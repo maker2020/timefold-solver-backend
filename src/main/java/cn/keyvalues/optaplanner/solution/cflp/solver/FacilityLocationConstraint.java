@@ -15,15 +15,22 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-            noRestDemand(constraintFactory), // 目前这个约束所用的影子变量其listener有一个corruption
+            noRestDemand(constraintFactory), // 目前这个约束所用的影子变量其listener有一个corruption需等待github issue解决
             serverStationCapicity(constraintFactory),
-            uniqueEntity(constraintFactory),
+            uniqueEntity(constraintFactory), // 后期如果多对多关系中，有一方能确定数量就可以改变模型，此约束可去除
             serverRadius(constraintFactory),
             noOverDemand(constraintFactory),
             greedyDemand(constraintFactory), // 这个和很多因素关联考虑
             lessStation(constraintFactory),
             matchLevel(constraintFactory),
+            distanceFromFacility(constraintFactory),
         };
+    }
+
+    Constraint distanceFromFacility(ConstraintFactory constraintFactory){
+        return constraintFactory.forEach(Assign.class)
+                .penalizeConfigurableLong(assign->assign.getBetweenDistance().longValue())
+                .asConstraint(FacilityLocationConstraintConfig.DISTANCE_FROM_FACILITY);
     }
     
     /**

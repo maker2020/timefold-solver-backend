@@ -89,6 +89,7 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
         s.put("location", station.getLocation());
         s.put("radius", station.getRadius());
         s.put("id", station.getId());
+        s.put("color", station.getColor());
         // s.put("", station.get)
         return s;
     }

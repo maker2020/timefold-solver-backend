@@ -67,6 +67,12 @@ public class FacilityLocationConstraintConfig {
     @ConstraintWeight(MATCH_LEVEL)
     HardMediumSoftLongScore matchLevel=HardMediumSoftLongScore.ofHard(1);
 
+    /**
+     * 离服务站
+     */
+    @ConstraintWeight(DISTANCE_FROM_FACILITY)
+    HardMediumSoftLongScore distanceFromFacility = HardMediumSoftLongScore.ofSoft(5);
+
     /************ 预留扩展 ************/
 
 
@@ -76,9 +82,4 @@ public class FacilityLocationConstraintConfig {
     @ConstraintWeight(FACILITY_SETUP_COST)
     HardMediumSoftLongScore facilitySetupCost = HardMediumSoftLongScore.ofSoft(2);
 
-    /**
-     * 离服务站
-     */
-    @ConstraintWeight(DISTANCE_FROM_FACILITY)
-    HardMediumSoftLongScore distanceFromFacility = HardMediumSoftLongScore.ofSoft(5);
 }
