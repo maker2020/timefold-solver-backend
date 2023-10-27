@@ -43,7 +43,7 @@ public class ServerStation extends AbstractPersistable {
     // @DeepPlanningClone
     // @ShadowVariable(sourceEntityClass = ServerStation.class,sourceVariableName = "assignedCustomers",variableListenerClass = StationUsedCapacityListener.class)
     // @PiggybackShadowVariable(shadowEntityClass = Customer.class,shadowVariableName = "remainingDemand")
-    // @Hidden
+    @Hidden
     @ShadowVariable(sourceEntityClass = Customer.class,sourceVariableName = "remainingDemand",variableListenerClass = StationUsedCapacityListener.class)
     protected Long usedCapacity;
 

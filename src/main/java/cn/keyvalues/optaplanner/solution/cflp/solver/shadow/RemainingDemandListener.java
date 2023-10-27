@@ -1,5 +1,7 @@
 package cn.keyvalues.optaplanner.solution.cflp.solver.shadow;
 
+import java.util.List;
+
 import org.optaplanner.core.api.domain.variable.VariableListener;
 import org.optaplanner.core.api.score.director.ScoreDirector;
 
@@ -16,7 +18,7 @@ public class RemainingDemandListener implements VariableListener<FacilityLocatio
 
     @Override
     public void afterEntityAdded(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer entity) {
-        updateRemainingDemand(scoreDirector, entity);
+
     }
 
     @Override
@@ -31,13 +33,15 @@ public class RemainingDemandListener implements VariableListener<FacilityLocatio
 
     @Override
     public void beforeVariableChanged(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer entity) {
-        
+        retractRemainingDemand(scoreDirector, entity);
     }
 
     @Override
     public void afterVariableChanged(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer customer) {
         updateRemainingDemand(scoreDirector, customer);
     }
+
+    // 应该设计为after: update , before: retract
 
     private void updateRemainingDemand(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer customer){
         // if(customer==null){
@@ -55,6 +59,22 @@ public class RemainingDemandListener implements VariableListener<FacilityLocatio
         customer.setRemainingDemand(remainingDemand);
         scoreDirector.afterVariableChanged(customer, "remainingDemand");
         
+    }
+
+    private void retractRemainingDemand(ScoreDirector<FacilityLocationSolution> scoreDirector, Customer customer){
+        List<Assign> assignedStations = customer.getAssignedStations();
+        if(assignedStations.size()!=0){
+            long remainingDemand=customer.getRemainingDemand();
+            for (Assign assign : assignedStations) {
+                if(assign.getStation()!=null && assign.getAssignedDemand()!=null){
+                    remainingDemand+=assign.getAssignedDemand();
+                }
+            }
+            remainingDemand=remainingDemand>customer.getMaxDemand()?customer.getMaxDemand():remainingDemand;
+            scoreDirector.beforeVariableChanged(customer, "remainingDemand");
+            customer.setRemainingDemand(remainingDemand);
+            scoreDirector.afterVariableChanged(customer, "remainingDemand");
+        }
     }
 
     // 记录：之前的普通实现。此处用影子变量才刷新分数，或者说影子变量适合参与约束计算

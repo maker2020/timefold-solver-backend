@@ -42,7 +42,7 @@ public class Customer extends AbstractPersistable{
 
     // @ShadowVariable(sourceEntityClass = Assign.class,sourceVariableName = "customer",variableListenerClass = RemainingDemandListener.class)
     @ShadowVariable(sourceEntityClass = Customer.class,sourceVariableName = "assignedStations",variableListenerClass = RemainingDemandListener.class)
-    // @Schema(hidden = true)
+    @Schema(hidden = true)
     protected Long remainingDemand;
 
     public Customer(long id,long maxDemand,Location location,int demandLevel){

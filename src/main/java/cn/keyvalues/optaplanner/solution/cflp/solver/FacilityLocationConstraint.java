@@ -15,7 +15,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     @Override
     public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-            noRestDemand(constraintFactory),
+            noRestDemand(constraintFactory), // 目前这个约束所用的影子变量其listener有一个corruption
             serverStationCapicity(constraintFactory),
             uniqueEntity(constraintFactory),
             serverRadius(constraintFactory),

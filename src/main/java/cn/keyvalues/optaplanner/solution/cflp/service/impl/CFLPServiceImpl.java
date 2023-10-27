@@ -63,6 +63,7 @@ public class CFLPServiceImpl implements CFLPService{
         long id=0;
         for(Customer c:customers){
             c.setId(id++);
+            c.setRemainingDemand(c.getMaxDemand());
         }
         solution.setCustomers(customers);
 
@@ -70,6 +71,7 @@ public class CFLPServiceImpl implements CFLPService{
         id=0;
         for(ServerStation station:serverStations){
             station.setId(id++);
+            station.setUsedCapacity(0L);
         }
         solution.setServerStations(serverStations);
 
