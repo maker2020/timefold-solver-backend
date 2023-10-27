@@ -67,6 +67,8 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
             assignObj.put("betweenDistance", assign.getBetweenDistance());
             assignList.add(assignObj);
         }
+        solution.put("hardScore", score.hardScore());
+        solution.put("softScore", score.softScore());
         solution.put("assigns", assignList);
         return solution;
     }
