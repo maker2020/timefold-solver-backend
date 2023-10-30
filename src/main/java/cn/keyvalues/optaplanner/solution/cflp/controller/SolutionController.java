@@ -55,11 +55,34 @@ public class SolutionController {
         return result;
     }
 
+    // 目前只支持cold start，要实现warm start需实现addProblemChange
     @GetMapping("/terminalProblem")
     @Operation(summary = "立即终止问题并获取结果")
     public Result<?> terminalProblem(@RequestParam String problemID){
         Map<String,Object> data = cflpService.terminalProblem(UUID.fromString(problemID),false);
         return Result.OK(data);
+    }
+    
+    @GetMapping("/deleteStationRealTime")
+    @Operation(summary = "warm restart 实时计算")
+    public Result<?> deleteStationRealTime(String problemID,Long stationID){
+        try{
+            cflpService.deleteStationRealTime(UUID.fromString(problemID), stationID);
+            return Result.OK();
+        }catch(Exception e){
+            return Result.failed(e.getMessage());
+        }
+    }
+
+    @GetMapping("/deleteCustomerRealTime")
+    @Operation(summary = "warm restart 实时计算")
+    public Result<?> deleteCustomerRealTime(String problemID,Long stationID){
+        try{
+            cflpService.deleteCustomerRealTime(UUID.fromString(problemID), stationID);
+            return Result.OK();
+        }catch(Exception e){
+            return Result.failed(e.getMessage());
+        }
     }
 
 }

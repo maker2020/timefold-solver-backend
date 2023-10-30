@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -98,6 +99,55 @@ public class CFLPServiceImpl implements CFLPService{
     @Override
     public Map<String, Object> terminalProblem(UUID problemID, boolean save) {
         return solutionHelper.terminalProblem(problemID, null, null);
+    }
+
+    @Override
+    public void deleteStationRealTime(UUID problemID,final long stationID) {
+        ServerStation station=new ServerStation();
+        station.setId(stationID);
+        SolverManager<FacilityLocationSolution,UUID> solverManager = solutionHelper.getSolverManager(problemID, FacilityLocationSolution.class);
+        solverManager.addProblemChange(problemID, (workingSolution,problemChangeDirector)->{
+            problemChangeDirector.lookUpWorkingObject(station).ifPresentOrElse(workingStation->{
+                // 1. First remove the problem fact from all planning entities that use it
+                for (Assign assign : workingSolution.getAssigns()) {
+                    if(assign.getStation()==workingStation){
+                        problemChangeDirector.changeVariable(assign, "station", 
+                                workingAssign->workingAssign.setStation(null));
+                    }
+                }
+                // 2. A SolutionCloner does not clone problem fact lists (such as computerList)
+                // Shallow clone the computerList so only workingSolution is affected, not bestSolution or guiSolution
+                // 此处不能深克隆，不然bestSolution等阶段变量都会改变。
+                ArrayList<ServerStation> stationList=new ArrayList<>(workingSolution.getServerStations());
+                workingSolution.setServerStations(stationList);
+                // 3. Remove the problem fact itself
+                problemChangeDirector.removeProblemFact(workingStation, stationList::remove);
+            }, ()->{
+                throw new IllegalStateException("station @id:"+stationID+" is not present.");
+            });
+        });
+    }
+
+    @Override
+    public void deleteCustomerRealTime(UUID problemID, long customerID) {
+        Customer customer=new Customer();
+        customer.setId(customerID);
+        SolverManager<FacilityLocationSolution,UUID> solverManager = solutionHelper.getSolverManager(problemID, FacilityLocationSolution.class);
+        solverManager.addProblemChange(problemID, (workingSolution,problemChangeDirector)->{
+            problemChangeDirector.lookUpWorkingObject(customer).ifPresentOrElse(workingCustomer->{
+                for(Assign assign:workingSolution.getAssigns()){
+                    if(assign.getCustomer()==workingCustomer){
+                        problemChangeDirector.changeVariable(assign, "customer", 
+                                workingAssign->workingAssign.setCustomer(null));
+                    }
+                }
+                ArrayList<Customer> customerList=new ArrayList<>(workingSolution.getCustomers());
+                workingSolution.setCustomers(customerList);
+                problemChangeDirector.removeProblemFact(workingCustomer, customerList::remove);
+            }, ()->{
+                throw new IllegalStateException("customer @id:"+customerID+" is not present.");
+            });
+        });
     }
     
 }
