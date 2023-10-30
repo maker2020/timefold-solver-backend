@@ -149,5 +149,26 @@ public class CFLPServiceImpl implements CFLPService{
             });
         });
     }
+
+    @Override
+    public void addStationRealTime(UUID problemID, ServerStation newStation) throws RuntimeException {
+        // SolverManager<FacilityLocationSolution,UUID> solverManager = solutionHelper.getSolverManager(problemID, FacilityLocationSolution.class);
+        // solverManager.addProblemChange(problemID, (workingSolution,problemChangeDirector)->{
+        //     long maxID = workingSolution.getServerStations().stream().mapToLong(ServerStation::getId).max().getAsLong();
+        //     // 待研究它的机制是否有并发问题
+        //     newStation.setId(maxID+1);
+        //     // 以m*n，扩充Assign
+        //     List<Assign> assigns = workingSolution.getAssigns();
+        //     // 不确定是不是能扩充entity，待issue回复再写这个。
+        //     long addLength=workingSolution.getCustomers().size();
+            
+        // });
+    }
+
+    @Override
+    public void addCustomerRealTime(UUID problemID, Customer newCustomer) throws RuntimeException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addCustomerRealTime'");
+    }
     
 }

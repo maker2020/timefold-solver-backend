@@ -7,8 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-import cn.keyvalues.optaplanner.mybatis.handler.CustomerListTypeHandler;
-import cn.keyvalues.optaplanner.mybatis.handler.VisitorListTypeHandler;
+import cn.keyvalues.optaplanner.mybatis.handler.maprouting.CustomerListTypeHandler;
+import cn.keyvalues.optaplanner.mybatis.handler.maprouting.VisitorListTypeHandler;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Customer;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Visitor;
 import lombok.Data;
