@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import cn.keyvalues.optaplanner.common.Result;
-import cn.keyvalues.optaplanner.solution.cflp.Main;
 import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ProblemInputVo;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
@@ -45,7 +44,6 @@ public class CFLPServiceImpl implements CFLPService{
     @Override
     public Result<?> solveAsync(ProblemInputVo problemInputVo) {
         FacilityLocationSolution initializedSolution = generateSolution(problemInputVo);
-        Main.test(initializedSolution);
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));
         // 随机问题ID，用于跟踪问题
         UUID problemID=UUID.randomUUID();

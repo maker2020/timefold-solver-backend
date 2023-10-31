@@ -29,7 +29,7 @@ public class FacilityLocationConstraintConfig {
      * 不过度分配
      */
     @ConstraintWeight(NO_OVER_DEMAND)
-    HardMediumSoftLongScore noOverDemand=HardMediumSoftLongScore.ofSoft(2);
+    HardMediumSoftLongScore noOverDemand=HardMediumSoftLongScore.ofMedium(2);
 
     /**
      * 服务半径
@@ -47,19 +47,19 @@ public class FacilityLocationConstraintConfig {
      * 贪婪消耗需求
      */
     @ConstraintWeight(GREEDY_DEMAND)
-    HardMediumSoftLongScore greedyDemand=HardMediumSoftLongScore.ofSoft(1);
+    HardMediumSoftLongScore greedyDemand=HardMediumSoftLongScore.ofMedium(1);
 
     /**
      * 服务站数量尽可能少
      */
     @ConstraintWeight(LESS_STATION)
-    HardMediumSoftLongScore lessStation=HardMediumSoftLongScore.ofSoft(1);
+    HardMediumSoftLongScore lessStation=HardMediumSoftLongScore.ofMedium(1);
 
     /**
      * 不剩余需求
      */
     @ConstraintWeight(NO_REST_DEMAND)
-    HardMediumSoftLongScore noRestDemand=HardMediumSoftLongScore.ofSoft(1);
+    HardMediumSoftLongScore noRestDemand=HardMediumSoftLongScore.ofMedium(1);
 
     /**
      * 等级要匹配
@@ -71,7 +71,7 @@ public class FacilityLocationConstraintConfig {
      * 离服务站
      */
     @ConstraintWeight(DISTANCE_FROM_FACILITY)
-    HardMediumSoftLongScore distanceFromFacility = HardMediumSoftLongScore.ofSoft(5);
+    HardMediumSoftLongScore distanceFromFacility = HardMediumSoftLongScore.ofSoft(1);
 
     /************ 预留扩展 ************/
 

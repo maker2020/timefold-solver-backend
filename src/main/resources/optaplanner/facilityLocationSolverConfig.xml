@@ -18,7 +18,7 @@
 
   <termination>
     <!-- <minutesSpentLimit>5</minutesSpentLimit> -->
-    <secondsSpentLimit>10</secondsSpentLimit>
+    <secondsSpentLimit>6</secondsSpentLimit>
   </termination>
 
   <constructionHeuristic>
