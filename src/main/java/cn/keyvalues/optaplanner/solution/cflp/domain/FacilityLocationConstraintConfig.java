@@ -29,7 +29,7 @@ public class FacilityLocationConstraintConfig {
      * 不过度分配
      */
     @ConstraintWeight(NO_OVER_DEMAND)
-    HardMediumSoftLongScore noOverDemand=HardMediumSoftLongScore.ofSoft(1);
+    HardMediumSoftLongScore noOverDemand=HardMediumSoftLongScore.ofSoft(2);
 
     /**
      * 服务半径
@@ -59,7 +59,7 @@ public class FacilityLocationConstraintConfig {
      * 不剩余需求
      */
     @ConstraintWeight(NO_REST_DEMAND)
-    HardMediumSoftLongScore noRestDemand=HardMediumSoftLongScore.ofHard(1);
+    HardMediumSoftLongScore noRestDemand=HardMediumSoftLongScore.ofSoft(1);
 
     /**
      * 等级要匹配
