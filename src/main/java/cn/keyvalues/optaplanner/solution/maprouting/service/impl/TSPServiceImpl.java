@@ -56,11 +56,8 @@ public class TSPServiceImpl implements TSPService{
         UUID problemID=UUID.randomUUID();
         // 在求解开始前做持久化。
         TSPSolutionEntity solutionEntity=new TSPSolutionEntity();
-        solutionEntity.setCustomersJson(initializedSolution.getCustomerList());
         solutionEntity.setProblemId(problemID.toString());
-        solutionEntity.setProblemName(problemInputVo.getProblemName());
-        solutionEntity.setTimeLimit(problemInputVo.getTimeLimit());
-        solutionEntity.setVisitorsJson(initializedSolution.getVisitorList());
+        BeanUtils.copyPropertiesSpring(problemInputVo, solutionEntity);
         solutionService.save(solutionEntity);
         // 求解
         solutionHelper.solveAsync(initializedSolution, solverConfig, problemID, update->{
@@ -69,7 +66,7 @@ public class TSPServiceImpl implements TSPService{
         }, update->{
             // 使数据库保持最新数据状态
             TSPSolutionEntity entity = solutionService.getOne(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
-            entity.setVisitorsJson(update.getVisitorList());
+            entity.setVisitors(update.getVisitorList());
             entity.setStatus(SolverStatus.SOLVING_ACTIVE.toString());
             solutionService.saveOrUpdate(entity);
         }, finalSolution->{
@@ -190,7 +187,7 @@ public class TSPServiceImpl implements TSPService{
                     // 更新终止结果至数据库
                     TSPSolutionEntity entity=solutionService.getOne(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
                     entity.setStatus(SolverStatus.NOT_SOLVING.toString());
-                    entity.setVisitorsJson(solution.getVisitorList());
+                    entity.setVisitors(solution.getVisitorList());
                     solutionService.saveOrUpdate(entity);
             });
         }
@@ -203,8 +200,8 @@ public class TSPServiceImpl implements TSPService{
         for(TSPSolutionEntity entity:list){
             Map<String,Object> solution=BeanUtils.objectToMap(entity);
             // 对customers和visitors单独处理
-            solution.put("customers", VisitorRoutingSolution.getNoEachReferenceCustomers(entity.getCustomersJson()));
-            solution.put("visitors", VisitorRoutingSolution.getNoEachReferenceVisitors(entity.getVisitorsJson()));
+            solution.put("customers", VisitorRoutingSolution.getNoEachReferenceCustomers(entity.getCustomers()));
+            solution.put("visitors", VisitorRoutingSolution.getNoEachReferenceVisitors(entity.getVisitors()));
             problemList.add(solution);
         }
         return problemList;

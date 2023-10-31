@@ -23,9 +23,9 @@ public class TSPSolutionEntity {
 
     // typehandler处理json序列化
     @TableField(typeHandler = CustomerListTypeHandler.class)
-    private List<Customer> customersJson;
+    private List<Customer> customers;
     @TableField(typeHandler = VisitorListTypeHandler.class)
-    private List<Visitor> visitorsJson;
+    private List<Visitor> visitors;
 
     private Long timeLimit;
     private String score;

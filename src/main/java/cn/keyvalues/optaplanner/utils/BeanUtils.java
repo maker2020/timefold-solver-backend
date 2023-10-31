@@ -27,4 +27,13 @@ public class BeanUtils {
         return map;
     }
 
+    /**
+     * 使用这个应注意两个pojo的property name一致
+     * @param from
+     * @param to
+     */
+    public static void copyPropertiesSpring(Object from,Object to){
+        org.springframework.beans.BeanUtils.copyProperties(from, to);
+    }
+
 }

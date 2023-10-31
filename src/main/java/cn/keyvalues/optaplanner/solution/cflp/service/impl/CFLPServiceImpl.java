@@ -41,6 +41,7 @@ public class CFLPServiceImpl implements CFLPService{
         this.solutionService=solutionService;
     }
 
+    // transactional
     @Override
     public Result<?> solveAsync(ProblemInputVo problemInputVo) {
         FacilityLocationSolution initializedSolution = generateSolution(problemInputVo);
@@ -48,12 +49,22 @@ public class CFLPServiceImpl implements CFLPService{
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));
         // 随机问题ID，用于跟踪问题
         UUID problemID=UUID.randomUUID();
+        // 保存问题
+        // CFLPSolutionEntity entity=new CFLPSolutionEntity();
+        // entity.setProblemId(problemID.toString());
+        // BeanUtils.copyPropertiesSpring(problemInputVo, entity);
+        // solutionService.save(entity);
+
         solutionHelper.solveAsync(initializedSolution, solverConfig, problemID, update->{
             // 求解记录放入队列前的处理
+            // do nothing
         }, update->{
             // 持久化存储的更新...
         }, lastSolution->{
             // 持久化存储的更新...
+            // CFLPSolutionEntity solution=solutionService.getOne(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID.toString()));
+            // solution.setStatus(SolverStatus.NOT_SOLVING.toString());
+            // solutionService.saveOrUpdate(solution);
         });
         Map<String,Object> data=new HashMap<>();
         data.put("problemID", problemID.toString());
