@@ -15,7 +15,7 @@ import lombok.Data;
 
 @Data
 @TableName(value = "visitor_routing_solution",autoResultMap = true)
-public class SolutionEntity {
+public class TSPSolutionEntity {
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 

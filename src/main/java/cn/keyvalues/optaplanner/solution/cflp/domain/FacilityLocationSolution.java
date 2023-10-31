@@ -73,7 +73,25 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
         return solution;
     }
 
-    private Map<String,Object> releaseCustomer(Customer customer){
+    public static List<Map<String,Object>> releaseCustomers(List<Customer> customers){
+        List<Map<String,Object>> list=new ArrayList<>();
+        customers.forEach(c->{
+            Map<String,Object> releaseCustomer = releaseCustomer(c);
+            list.add(releaseCustomer);
+        });
+        return list;
+    }
+
+    public static List<Map<String,Object>> releaseStations(List<ServerStation> stations){
+        List<Map<String,Object>> list=new ArrayList<>();
+        stations.forEach(s->{
+            Map<String,Object> releaseStation = releaseStation(s);
+            list.add(releaseStation);
+        });
+        return list;
+    }
+
+    public static Map<String,Object> releaseCustomer(Customer customer){
         if(customer==null) return null;
         Map<String,Object> c=new HashMap<>();
         c.put("remainingDemand", customer.getRemainingDemand());
@@ -85,7 +103,7 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
         return c;
     }
 
-    private Map<String,Object> releaseStation(ServerStation station){
+    public static Map<String,Object> releaseStation(ServerStation station){
         if(station==null) return null;
         Map<String,Object> s=new HashMap<>();
         s.put("usedCapacity", station.getUsedCapacity());

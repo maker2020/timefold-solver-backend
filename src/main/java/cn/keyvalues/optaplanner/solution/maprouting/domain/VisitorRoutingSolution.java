@@ -12,9 +12,6 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-
 import cn.keyvalues.optaplanner.common.CircularRefRelease;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
 import lombok.Getter;
@@ -70,14 +67,12 @@ public class VisitorRoutingSolution extends AbstractPersistable implements Circu
         if(extraData!=null){
             solution.putAll(extraData);
         }
-        String customersJSON = getNoEachReferenceCustomers(solution_.getCustomerList());
-        String visitorsJSON = getNoEachReferenceVisitors(solution_.getVisitorList());
-        solution.put("customers", JSON.parse(customersJSON));
-        solution.put("visitors", JSON.parse(visitorsJSON));
+        solution.put("customers", getNoEachReferenceCustomers(solution_.getCustomerList()));
+        solution.put("visitors", getNoEachReferenceVisitors(solution_.getVisitorList()));
         return solution;
     }
     
-    public static String getNoEachReferenceCustomers(List<Customer> customers){
+    public static List<Map<String,Object>> getNoEachReferenceCustomers(List<Customer> customers){
         List<Map<String,Object>> customerList_=new ArrayList<>();
         for(Customer c:customers){
             Map<String,Object> customer=new HashMap<>();
@@ -85,21 +80,20 @@ public class VisitorRoutingSolution extends AbstractPersistable implements Circu
             // customer.put("tactics",c.getTactics());
             customerList_.add(customer);
         }
-        return JSON.toJSONString(customerList_,SerializerFeature.DisableCircularReferenceDetect);
+        return customerList_;
     }
 
-    public static String getNoEachReferenceVisitors(List<Visitor> visitors){
+    public static List<Map<String,Object>> getNoEachReferenceVisitors(List<Visitor> visitors){
         List<Map<String,Object>> visitorList_=new ArrayList<>();
         for(Visitor v:visitors){
             Map<String,Object> visitor=new HashMap<>();
             visitor.put("base", v.getBase());
-            String customersJSON = getNoEachReferenceCustomers(v.getCustomers());
-            visitor.put("customers", JSON.parse(customersJSON));
+            visitor.put("customers", getNoEachReferenceCustomers(v.getCustomers()));
             // 访问路径及详细信息。
             visitor.put("routingInfo", v.getOptimalRelatedMap());
             visitorList_.add(visitor);
         }
-        return JSON.toJSONString(visitorList_,SerializerFeature.DisableCircularReferenceDetect);
+        return visitorList_;
     }
     
 }

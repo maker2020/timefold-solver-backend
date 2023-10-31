@@ -17,7 +17,7 @@ import lombok.Data;
 
 @Data
 @TableName(value = "facility_location_solution",autoResultMap = true)
-public class SolutionEntity {
+public class CFLPSolutionEntity {
 
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;

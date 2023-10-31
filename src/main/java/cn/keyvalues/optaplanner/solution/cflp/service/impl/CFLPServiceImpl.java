@@ -10,6 +10,7 @@ import java.util.UUID;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,10 @@ import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
 import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationSolution;
 import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
+import cn.keyvalues.optaplanner.solution.cflp.domain.entity.CFLPSolutionEntity;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPService;
+import cn.keyvalues.optaplanner.solution.cflp.service.CFLPSolutionService;
+import cn.keyvalues.optaplanner.utils.BeanUtils;
 import cn.keyvalues.optaplanner.utils.SolutionHelper;
 
 @Service
@@ -28,10 +32,13 @@ public class CFLPServiceImpl implements CFLPService{
 
     private final SolverConfig solverConfig;
     private SolutionHelper solutionHelper;
+    private CFLPSolutionService solutionService;
 
-    public CFLPServiceImpl(@Qualifier("cflpConfig") SolverConfig solverConfig,SolutionHelper solutionHelper) {
+    public CFLPServiceImpl(@Qualifier("cflpConfig") SolverConfig solverConfig,
+            SolutionHelper solutionHelper,CFLPSolutionService solutionService) {
         this.solverConfig = solverConfig;
         this.solutionHelper=solutionHelper;
+        this.solutionService=solutionService;
     }
 
     @Override
@@ -169,6 +176,21 @@ public class CFLPServiceImpl implements CFLPService{
     public void addCustomerRealTime(UUID problemID, Customer newCustomer) throws RuntimeException {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addCustomerRealTime'");
+    }
+
+    @Override
+    public List<Map<String, Object>> listProblem() {
+        List<Map<String,Object>> result=new ArrayList<>();
+        List<CFLPSolutionEntity> list = solutionService.list();
+        for (CFLPSolutionEntity entity : list) {
+            Map<String, Object> solution = BeanUtils.objectToMap(entity);
+            // 对customers和serverStation单独处理。
+            // ...
+            solution.put("customers", FacilityLocationSolution.releaseCustomers(entity.getCustomers()));
+            solution.put("stations", FacilityLocationSolution.releaseStations(entity.getServerStations()));
+            result.add(solution);
+        }
+        return result;
     }
     
 }

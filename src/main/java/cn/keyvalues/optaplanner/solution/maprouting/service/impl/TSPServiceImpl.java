@@ -9,6 +9,7 @@ import java.util.UUID;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +24,10 @@ import cn.keyvalues.optaplanner.solution.maprouting.domain.Customer;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Location;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Visitor;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.VisitorRoutingSolution;
-import cn.keyvalues.optaplanner.solution.maprouting.domain.entity.SolutionEntity;
-import cn.keyvalues.optaplanner.solution.maprouting.service.SolutionService;
+import cn.keyvalues.optaplanner.solution.maprouting.domain.entity.TSPSolutionEntity;
+import cn.keyvalues.optaplanner.solution.maprouting.service.TSPSolutionService;
 import cn.keyvalues.optaplanner.solution.maprouting.service.TSPService;
+import cn.keyvalues.optaplanner.utils.BeanUtils;
 import cn.keyvalues.optaplanner.utils.SolutionHelper;
 
 import static cn.keyvalues.optaplanner.utils.Utils.redisUtil;
@@ -34,12 +36,12 @@ import static cn.keyvalues.optaplanner.utils.Utils.redisUtil;
 public class TSPServiceImpl implements TSPService{
 
     SolutionHelper solutionHelper;
-    SolutionService solutionService;
+    TSPSolutionService solutionService;
     BaiduDirection baiduDirection;
     SolverConfig solverConfig;
 
     public TSPServiceImpl(SolutionHelper solutionHelper,BaiduDirection baiduDirection,
-            @Qualifier("tspConfig") SolverConfig solverConfig,SolutionService solutionService){
+            @Qualifier("tspConfig") SolverConfig solverConfig,TSPSolutionService solutionService){
         this.solverConfig = solverConfig;
         this.baiduDirection = baiduDirection;
         this.solutionService=solutionService;
@@ -53,7 +55,7 @@ public class TSPServiceImpl implements TSPService{
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));
         UUID problemID=UUID.randomUUID();
         // 在求解开始前做持久化。
-        SolutionEntity solutionEntity=new SolutionEntity();
+        TSPSolutionEntity solutionEntity=new TSPSolutionEntity();
         solutionEntity.setCustomersJson(initializedSolution.getCustomerList());
         solutionEntity.setProblemId(problemID.toString());
         solutionEntity.setProblemName(problemInputVo.getProblemName());
@@ -66,12 +68,12 @@ public class TSPServiceImpl implements TSPService{
             update.getVisitorList().forEach(v->v.arrangeOptimalRelatedMap());
         }, update->{
             // 使数据库保持最新数据状态
-            SolutionEntity entity = solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+            TSPSolutionEntity entity = solutionService.getOne(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
             entity.setVisitorsJson(update.getVisitorList());
             entity.setStatus(SolverStatus.SOLVING_ACTIVE.toString());
             solutionService.saveOrUpdate(entity);
         }, finalSolution->{
-            SolutionEntity solution=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+            TSPSolutionEntity solution=solutionService.getOne(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
             solution.setStatus(SolverStatus.NOT_SOLVING.toString());
             solutionService.saveOrUpdate(solution);
         });
@@ -186,7 +188,7 @@ public class TSPServiceImpl implements TSPService{
         } else {
             return solutionHelper.terminalProblem(problemID,VisitorRoutingSolution.class, solution->{
                     // 更新终止结果至数据库
-                    SolutionEntity entity=solutionService.getOne(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+                    TSPSolutionEntity entity=solutionService.getOne(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
                     entity.setStatus(SolverStatus.NOT_SOLVING.toString());
                     entity.setVisitorsJson(solution.getVisitorList());
                     solutionService.saveOrUpdate(entity);
@@ -197,14 +199,10 @@ public class TSPServiceImpl implements TSPService{
     @Override
     public List<Map<String, Object>> listProblem() {
         List<Map<String,Object>> problemList=new ArrayList<>();
-        List<SolutionEntity> list = solutionService.list();
-        for(SolutionEntity entity:list){
-            Map<String,Object> solution=new HashMap<>();
-            solution.put("problemID", entity.getProblemId());
-            solution.put("problemName", entity.getProblemName());
-            solution.put("score", entity.getScore());
-            solution.put("status", entity.getStatus());
-            solution.put("timeLimit", entity.getTimeLimit());
+        List<TSPSolutionEntity> list = solutionService.list();
+        for(TSPSolutionEntity entity:list){
+            Map<String,Object> solution=BeanUtils.objectToMap(entity);
+            // 对customers和visitors单独处理
             solution.put("customers", VisitorRoutingSolution.getNoEachReferenceCustomers(entity.getCustomersJson()));
             solution.put("visitors", VisitorRoutingSolution.getNoEachReferenceVisitors(entity.getVisitorsJson()));
             problemList.add(solution);
@@ -215,7 +213,7 @@ public class TSPServiceImpl implements TSPService{
     @Override
     public boolean deleteProblem(UUID problemID) {
         terminalProblem(problemID,false);
-        boolean deleted=solutionService.remove(new QueryWrapper<SolutionEntity>().eq("problem_id", problemID.toString()));
+        boolean deleted=solutionService.remove(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
         return deleted;
     }
     

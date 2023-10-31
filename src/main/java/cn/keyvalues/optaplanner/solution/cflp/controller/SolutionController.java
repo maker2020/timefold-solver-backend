@@ -1,5 +1,6 @@
 package cn.keyvalues.optaplanner.solution.cflp.controller;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -83,6 +84,15 @@ public class SolutionController {
         }catch(Exception e){
             return Result.failed(e.getMessage());
         }
+    }
+
+    /**************** CRUD ****************/
+    
+    @GetMapping("/listProblem")
+    @Operation(summary = "问题列表")
+    public Result<?> listProblem(){
+        List<Map<String,Object>> listProblem = cflpService.listProblem();
+        return Result.OK(listProblem);
     }
 
 }

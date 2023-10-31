@@ -1,5 +1,7 @@
 package cn.keyvalues.optaplanner.solution.cflp.service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import cn.keyvalues.optaplanner.common.SolverService;
@@ -37,5 +39,9 @@ public interface CFLPService extends SolverService<ProblemInputVo>{
      * @throws RuntimeException
      */
     void addCustomerRealTime(UUID problemID,Customer newCustomer) throws RuntimeException;
+
+    /**************** CURD ****************/
+    
+    List<Map<String,Object>> listProblem();
 
 }
