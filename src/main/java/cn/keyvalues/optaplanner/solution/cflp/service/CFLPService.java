@@ -44,4 +44,6 @@ public interface CFLPService extends SolverService<ProblemInputVo>{
     
     List<Map<String,Object>> listProblem();
 
+    boolean deleteProblem(UUID problemID);
+
 }

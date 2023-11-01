@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -93,6 +94,13 @@ public class SolutionController {
     public Result<?> listProblem(){
         List<Map<String,Object>> listProblem = cflpService.listProblem();
         return Result.OK(listProblem);
+    }
+
+    @DeleteMapping("/deleteProblem")
+    @Operation(summary = "删除问题")
+    public Result<?> deleteProblem(String problemID){
+        boolean success = cflpService.deleteProblem(UUID.fromString(problemID));
+        return success?Result.OK():Result.failed("");
     }
 
 }
