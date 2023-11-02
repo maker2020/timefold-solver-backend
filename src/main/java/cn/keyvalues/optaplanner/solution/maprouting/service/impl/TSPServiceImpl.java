@@ -68,10 +68,12 @@ public class TSPServiceImpl implements TSPService{
             TSPSolutionEntity entity = solutionService.getOne(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
             entity.setVisitors(update.getVisitorList());
             entity.setStatus(SolverStatus.SOLVING_ACTIVE.toString());
+            entity.setScore(update.getScore().toString());
             solutionService.saveOrUpdate(entity);
         }, finalSolution->{
             TSPSolutionEntity solution=solutionService.getOne(new QueryWrapper<TSPSolutionEntity>().eq("problem_id", problemID.toString()));
             solution.setStatus(SolverStatus.NOT_SOLVING.toString());
+            solution.setScore(finalSolution.getScore().toString());
             solutionService.saveOrUpdate(solution);
         });
         Map<String,Object> data=new HashMap<>();

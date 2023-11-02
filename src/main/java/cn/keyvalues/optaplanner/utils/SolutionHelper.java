@@ -69,7 +69,7 @@ public class SolutionHelper {
         Consumer<T> bestConsumer=consumer.andThen(bestSolutionConsumerAfter);
         Consumer<T> bestConsumerBegin=bestConsumerBefore.andThen(bestConsumer);
 
-        Consumer<T> finalConsumer=(finalSolution)->{
+        Consumer<T> finalConsumer=finalSolution->{
             Map<String,Object> newData=new HashMap<>();
             newData.put(STATUS_KEY, SolverStatus.NOT_SOLVING);
             newData.put(UPDATED_KEY, finalSolution);
@@ -82,9 +82,12 @@ public class SolutionHelper {
                 solverSolutionQueueMap.remove(problemID);
                 solverManagerMap.remove(problemID);
             }, CLEAR_DELAY, TimeUnit.SECONDS);
-            try {
-                executorService.awaitTermination(CLEAR_DELAY*2, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {}
+            new Thread(()->{
+                try {
+                    executorService.awaitTermination(CLEAR_DELAY, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {}
+                executorService.shutdown();
+            }).start();
         };
         Consumer<T> endConsumer=finalConsumer.andThen(resolvedConsumer);
         SolverJob<T,UUID> solverJob=solverManager.solveAndListen(problemID, 

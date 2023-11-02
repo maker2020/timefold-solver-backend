@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
@@ -50,27 +51,30 @@ public class CFLPServiceImpl implements CFLPService{
         // 随机问题ID，用于跟踪问题
         UUID problemID=UUID.randomUUID();
         // 保存问题
-        // CFLPSolutionEntity entity=new CFLPSolutionEntity();
-        // entity.setProblemId(problemID.toString());
-        // BeanUtils.copyPropertiesSpring(problemInputVo, entity);
-        // solutionService.save(entity);
+        CFLPSolutionEntity entity=new CFLPSolutionEntity();
+        entity.setProblemId(problemID.toString());
+        entity.setAssigns(initializedSolution.getAssigns());
+        BeanUtils.copyPropertiesSpring(problemInputVo, entity);
+        solutionService.save(entity);
 
         solutionHelper.solveAsync(initializedSolution, solverConfig, problemID, update->{
             // 求解记录放入队列前的处理
             // do nothing
         }, update->{
             // 持久化存储的更新...
-            // CFLPSolutionEntity solution = solutionService.getOne(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID.toString()));
-            // solution.setAssigns(update.getAssigns());
-            // solution.setCustomers(update.getCustomers());
-            // solution.setServerStations(update.getServerStations());
-            // solution.setStatus(SolverStatus.SOLVING_ACTIVE.toString());
-            // solutionService.saveOrUpdate(entity);
+            CFLPSolutionEntity solution = solutionService.getOne(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID.toString()));
+            solution.setAssigns(update.getAssigns());
+            solution.setCustomers(update.getCustomers());
+            solution.setServerStations(update.getServerStations());
+            solution.setStatus(SolverStatus.SOLVING_ACTIVE.toString());
+            solution.setScore(update.getScore().toString());
+            solutionService.saveOrUpdate(solution);
         }, lastSolution->{
             // 持久化存储的更新...
-            // CFLPSolutionEntity solution=solutionService.getOne(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID.toString()));
-            // solution.setStatus(SolverStatus.NOT_SOLVING.toString());
-            // solutionService.saveOrUpdate(solution);
+            CFLPSolutionEntity solution=solutionService.getOne(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID.toString()));
+            solution.setStatus(SolverStatus.NOT_SOLVING.toString());
+            solution.setScore(lastSolution.getScore().toString());
+            solutionService.saveOrUpdate(solution);
         });
         Map<String,Object> data=new HashMap<>();
         data.put("problemID", problemID.toString());
