@@ -57,19 +57,27 @@ public class FacilityLocationSolution extends AbstractPersistable implements Cir
     @Override
     public Map<String,Object> releaseCircular() {
         Map<String,Object> solution=new HashMap<>();
-        List<Map<String,Object>> assignList=new ArrayList<>();
-        for (int i = 0; i < assigns.size(); i++) {
-            Map<String,Object> assignObj=new HashMap<>();
-            Assign assign = assigns.get(i);
-            assignObj.put("assignedDemand", assign.getAssignedDemand());
-            assignObj.put("customer", releaseCustomer(assign.getCustomer()));
-            assignObj.put("serverStation", releaseStation(assign.getStation()));
-            assignObj.put("betweenDistance", assign.getBetweenDistance());
-            assignList.add(assignObj);
-        }
         solution.put("score", score.toString());
-        solution.put("assigns", assignList);
+        solution.put("assigns", releaseAssign(assigns));
         return solution;
+    }
+
+    public static Map<String,Object> releaseAssign(Assign assign){
+        Map<String,Object> assignObj=new HashMap<>();
+        assignObj.put("assignedDemand", assign.getAssignedDemand());
+        assignObj.put("customer", releaseCustomer(assign.getCustomer()));
+        assignObj.put("serverStation", releaseStation(assign.getStation()));
+        assignObj.put("betweenDistance", assign.getBetweenDistance());
+        return assignObj;
+    }
+
+    public static List<Map<String,Object>> releaseAssign(List<Assign> assigns){
+        List<Map<String,Object>> assignList=new ArrayList<>();
+        assigns.forEach(a->{
+            Map<String,Object> assign=releaseAssign(a);
+            assignList.add(assign);
+        });
+        return assignList;
     }
 
     public static List<Map<String,Object>> releaseCustomers(List<Customer> customers){

@@ -208,7 +208,8 @@ public class CFLPServiceImpl implements CFLPService{
             // 对customers和serverStation单独处理。
             // ...
             solution.put("customers", FacilityLocationSolution.releaseCustomers(entity.getCustomers()));
-            solution.put("stations", FacilityLocationSolution.releaseStations(entity.getServerStations()));
+            solution.put("serverStations", FacilityLocationSolution.releaseStations(entity.getServerStations()));
+            solution.put("assigns", FacilityLocationSolution.releaseAssign(entity.getAssigns()));
             result.add(solution);
         }
         return result;
