@@ -217,7 +217,7 @@ public class CFLPServiceImpl implements CFLPService{
 
     @Override
     public boolean deleteProblem(UUID problemID) {
-        return solutionService.remove(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID));
+        return solutionService.remove(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID.toString()));
     }
     
 }
