@@ -54,7 +54,9 @@ public class ConstraintProviderInvovationHandler implements InvocationHandler{
     private List<String> getUserConstraints() throws Exception{
         ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 	    HttpServletRequest request = servletRequestAttributes.getRequest();
-        List<String> constrains = (List<String>)request.getAttribute("selectedConstraints");
+        Object attribute = request.getAttribute("selectedConstraints");
+        if(attribute==null) return null;
+        List<String> constrains = (List<String>)attribute;
         return constrains;
     }
     

@@ -1,5 +1,6 @@
 package cn.keyvalues.optaplanner.solution.cflp.service.impl;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import cn.keyvalues.optaplanner.solution.cflp.service.CFLPSolutionService;
 import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
 import cn.keyvalues.optaplanner.utils.BeanUtils;
 import cn.keyvalues.optaplanner.utils.planner.SolutionHelper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -260,13 +262,21 @@ public class CFLPServiceImpl implements CFLPService{
     }
 
     @Override
-    public List<String> listDefinedConstraints() {
+    public List<Map<String,Object>> listDefinedConstraints() {
         Class<FacilityLocationConstraint> clazz = FacilityLocationConstraint.class;
-        return Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method->!method.getName().equals("defineConstraints"))
-                .filter(method->!method.getName().contains("$"))
-                .map(method->method.getName())
-                .toList();
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        List<Map<String,Object>> list=new ArrayList<>();
+        for(Method method:declaredMethods){
+            if(method.getName().equals("defineConstraints") ||
+                    method.getName().contains("$")){
+                continue;
+            }
+            Map<String,Object> obj=new HashMap<>();
+            obj.put("constraintID", method.getName());
+            obj.put("descriptionCN", method.getAnnotation(Schema.class).description());
+            list.add(obj);
+        }
+        return list;
     }
     
 }

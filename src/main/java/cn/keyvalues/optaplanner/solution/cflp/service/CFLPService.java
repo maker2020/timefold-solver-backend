@@ -50,7 +50,7 @@ public interface CFLPService extends SolverService<ProblemInputVo>{
      * 列出可用的约束对象
      * @return
      */
-    List<String> listDefinedConstraints();
+    List<Map<String,Object>> listDefinedConstraints();
 
     /**************** CURD ****************/
     

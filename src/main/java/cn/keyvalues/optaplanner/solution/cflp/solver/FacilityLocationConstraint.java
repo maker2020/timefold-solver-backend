@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
 import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationConstraintConfig;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class FacilityLocationConstraint implements ConstraintProvider {
 
@@ -27,6 +28,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
         };
     }
 
+    @Schema(description = FacilityLocationConstraintConfig.DISTANCE_FROM_FACILITY)
     Constraint distanceFromFacility(ConstraintFactory constraintFactory){
         return constraintFactory.forEach(Assign.class)
                 .penalizeConfigurableLong(assign->assign.getBetweenDistance().longValue())
@@ -36,6 +38,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
      * 分配需求的等级与服务站等级匹配：服务站必须更高级
      */
+    @Schema(description = FacilityLocationConstraintConfig.MATCH_LEVEL)
     Constraint matchLevel(ConstraintFactory constraintFactory){
         return constraintFactory.forEach(Assign.class)
                 .filter(assign->assign.getCustomer().getDemandLevel()>assign.getStation().getDemandLevel())
@@ -46,6 +49,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
      * 消耗需求的奖励（触发贪婪）
      */
+    @Schema(description = FacilityLocationConstraintConfig.GREEDY_DEMAND)
     Constraint greedyDemand(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Assign.class)
                 .rewardConfigurableLong(assign->assign.getAssignedDemand())
@@ -55,6 +59,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
      * 不过度分配：分配量不能 大于 当前剩余需求量
      */
+    @Schema(description = FacilityLocationConstraintConfig.NO_OVER_DEMAND)
     Constraint noOverDemand(ConstraintFactory constraintFactory){
         return constraintFactory.forEach(Assign.class)
                 .groupBy(Assign::getCustomer,ConstraintCollectors.sumLong(Assign::getAssignedDemand))
@@ -66,6 +71,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
      * 不能有剩余需求
      */
+    @Schema(description = FacilityLocationConstraintConfig.NO_REST_DEMAND)
     Constraint noRestDemand(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Customer.class)
                 .filter(c->c.getRemainingDemand()!=0)
@@ -76,6 +82,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
      * 服务站最少约束
      */
+    @Schema(description = FacilityLocationConstraintConfig.LESS_STATION)
     Constraint lessStation(ConstraintFactory constraintFactory) {
         // it is automatically filtered to only contain entities
         // for which each genuine PlanningVariable (of the sourceClass or a superclass thereof) has a non-null value
@@ -90,6 +97,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
      * 不重复约束
      */
+    @Schema(description = FacilityLocationConstraintConfig.UNIQUE_ENTITY)
     Constraint uniqueEntity(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Assign.class)
                 .join(Assign.class,Joiners.lessThan(Assign::getId),
@@ -101,6 +109,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
     * 不超出服务站容量约束
     */
+    @Schema(description = FacilityLocationConstraintConfig.FACILITY_CAPACITY)
     Constraint serverStationCapicity(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Assign.class)
                 .groupBy(Assign::getStation, ConstraintCollectors.sumLong(Assign::getAssignedDemand))
@@ -112,6 +121,7 @@ public class FacilityLocationConstraint implements ConstraintProvider {
     /**
      * 半径约束
      */
+    @Schema(description = FacilityLocationConstraintConfig.SERVER_RADIUS)
     Constraint serverRadius(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Assign.class)
                 .filter(assign->assign.getStation().getRadius()<assign.getBetweenDistance())
