@@ -1,6 +1,5 @@
 package cn.keyvalues.optaplanner.solution.cflp.service.impl;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -23,7 +21,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import cn.keyvalues.optaplanner.common.Result;
-import cn.keyvalues.optaplanner.proxy.ConstraintProviderInvovationHandler;
+import cn.keyvalues.optaplanner.proxy.ConstraintProviderProxyWrapper;
 import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ProblemInputVo;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
@@ -33,7 +31,6 @@ import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
 import cn.keyvalues.optaplanner.solution.cflp.domain.entity.CFLPSolutionEntity;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPService;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPSolutionService;
-import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
 import cn.keyvalues.optaplanner.utils.BeanUtils;
 import cn.keyvalues.optaplanner.utils.planner.SolutionHelper;
 
@@ -66,12 +63,7 @@ public class CFLPServiceImpl implements CFLPService{
         // 动态配置约束
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setInitializingScoreTrend("ANY");
-        FacilityLocationConstraint constraintProvider=new FacilityLocationConstraint();
-        ConstraintProviderInvovationHandler handler=new ConstraintProviderInvovationHandler(constraintProvider);
-        ConstraintProvider proxy=(ConstraintProvider)Proxy
-                .newProxyInstance(constraintProvider.getClass().getClassLoader(),
-                constraintProvider.getClass().getInterfaces(), handler);
-        scoreDirectorFactoryConfig.setConstraintProviderClass(proxy.getClass());
+        scoreDirectorFactoryConfig.setConstraintProviderClass(ConstraintProviderProxyWrapper.class);
         solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
 
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));

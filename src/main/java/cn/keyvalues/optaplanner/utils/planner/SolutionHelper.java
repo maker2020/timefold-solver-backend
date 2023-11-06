@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -188,6 +189,9 @@ public class SolutionHelper {
      * @throws Exception
      */
     public <T> void defineConstraintConfig(T solution,List<ConstraintConfig> constraintsConfig,Class<?> scoreClass) throws Exception,NoSuchFieldException{
+        if(CollectionUtils.isEmpty(constraintsConfig)){
+            return;
+        }
         Field constraintProviderField=null;
         Class<?> clazz = solution.getClass(); 
         for (Field field : clazz.getDeclaredFields()) {
