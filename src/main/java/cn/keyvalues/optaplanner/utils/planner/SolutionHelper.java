@@ -1,6 +1,9 @@
 package cn.keyvalues.optaplanner.utils.planner;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,6 +13,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -21,6 +26,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import cn.keyvalues.optaplanner.common.CircularRefRelease;
+import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ConstraintConfig;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -172,6 +178,51 @@ public class SolutionHelper {
         solverManagerMap.remove(problemID);
         solverSolutionQueueMap.remove(problemID);
         return result;
+    }
+
+    /**
+     * 给solution使用自定义约束权重配置。(前提：solution需要按照注解方式配置约束，且有constraintProvider注解字段)
+     * @param solution
+     * @param constraintsConfig
+     * @param scoreClass 
+     * @throws Exception
+     */
+    public <T> void defineConstraintConfig(T solution,List<ConstraintConfig> constraintsConfig,Class<?> scoreClass) throws Exception,NoSuchFieldException{
+        Field constraintProviderField=null;
+        Class<?> clazz = solution.getClass(); 
+        for (Field field : clazz.getDeclaredFields()) {
+            if(field.isAnnotationPresent(ConstraintConfigurationProvider.class)){
+                constraintProviderField=field;
+                break;
+            }
+        }
+        if(constraintProviderField==null){
+            throw new NoSuchFieldException("the solution:"+solution.getClass().getName()+" not exist constraint configuration provider.");
+        }
+        Object constraintConfig=constraintProviderField.getType().getConstructor().newInstance();
+        for (ConstraintConfig config : constraintsConfig) {
+            String constraintID = config.getConstraintID();
+            String constraintLevel = config.getConstraintLevel();
+            Long constraintWeight = config.getConstraintWeight();
+
+            Class<?> constraintProvider  = constraintProviderField.getType();
+            for (Field field : constraintProvider.getDeclaredFields()) {
+                if(field.isAnnotationPresent(ConstraintWeight.class)){
+                    ConstraintWeight annotation = field.getAnnotation(ConstraintWeight.class);
+                    String constraintDesc = annotation.value();
+                    if(constraintDesc.equals(constraintID)){
+                        field.setAccessible(true);
+                        // 只用long
+                        Method staticMethod = scoreClass.getDeclaredMethod("of"+constraintLevel, long.class);
+                        Object scoreInstance = staticMethod.invoke(null, constraintWeight);
+                        field.set(constraintConfig, scoreInstance);
+                        break;
+                    }
+                }
+            }
+        }
+        constraintProviderField.setAccessible(true);
+        constraintProviderField.set(solution, constraintConfig);
     }
 
 }
