@@ -46,6 +46,12 @@ public interface CFLPService extends SolverService<ProblemInputVo>{
      */
     List<String> listConstraints();
 
+    /**
+     * 列出可用的约束对象
+     * @return
+     */
+    List<String> listDefinedConstraints();
+
     /**************** CURD ****************/
     
     List<Map<String,Object>> listProblem();

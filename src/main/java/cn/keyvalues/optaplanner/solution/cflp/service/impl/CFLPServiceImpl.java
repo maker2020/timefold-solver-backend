@@ -31,8 +31,10 @@ import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
 import cn.keyvalues.optaplanner.solution.cflp.domain.entity.CFLPSolutionEntity;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPService;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPSolutionService;
+import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
 import cn.keyvalues.optaplanner.utils.BeanUtils;
 import cn.keyvalues.optaplanner.utils.planner.SolutionHelper;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class CFLPServiceImpl implements CFLPService{
@@ -40,17 +42,23 @@ public class CFLPServiceImpl implements CFLPService{
     private final SolverConfig solverConfig;
     private SolutionHelper solutionHelper;
     private CFLPSolutionService solutionService;
+    private final HttpServletRequest request;
 
     public CFLPServiceImpl(@Qualifier("cflpConfig") SolverConfig solverConfig,
-            SolutionHelper solutionHelper,CFLPSolutionService solutionService) {
+            SolutionHelper solutionHelper,CFLPSolutionService solutionService,
+            HttpServletRequest request) {
         this.solverConfig = solverConfig;
         this.solutionHelper=solutionHelper;
         this.solutionService=solutionService;
+        this.request=request;
     }
 
     // transactional
     @Override
     public Result<?> solveAsync(ProblemInputVo problemInputVo) {
+        // 待优化
+        request.setAttribute("selectedConstraints", problemInputVo.getSelectedConstraints());
+
         FacilityLocationSolution initializedSolution = generateSolution(problemInputVo);
         try {
             solutionHelper.defineConstraintConfig(initializedSolution,problemInputVo.getConstraintConfig(),HardMediumSoftLongScore.class);
@@ -249,6 +257,16 @@ public class CFLPServiceImpl implements CFLPService{
                 return "error";
             }
         }).toList();
+    }
+
+    @Override
+    public List<String> listDefinedConstraints() {
+        Class<FacilityLocationConstraint> clazz = FacilityLocationConstraint.class;
+        return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(method->!method.getName().equals("defineConstraints"))
+                .filter(method->!method.getName().contains("$"))
+                .map(method->method.getName())
+                .toList();
     }
     
 }

@@ -24,6 +24,9 @@ public class ProblemInputVo {
     private Long timeLimit;
 
     @Schema(description = "约束权重/目标函数系数的配置")
-    List<ConstraintConfig> constraintConfig;
+    private List<ConstraintConfig> constraintConfig;
 
+    @Schema(description = "选择的约束列表")
+    private List<String> selectedConstraints;
+    
 }

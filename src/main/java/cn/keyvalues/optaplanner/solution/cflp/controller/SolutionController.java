@@ -89,8 +89,14 @@ public class SolutionController {
 
     @GetMapping("/listConstraints")
     @Operation(summary = "约束列表")
-    public Result<?> lsitConstraints(){
+    public Result<?> listConstraints(){
         return Result.OK(cflpService.listConstraints());
+    }
+
+    @GetMapping("/listDefinedConstrains")
+    @Operation(summary = "程序已定义的约束列表")
+    public Result<?> listDefinedConstrains(){
+        return Result.OK(cflpService.listDefinedConstraints());
     }
 
     /**************** CRUD ****************/

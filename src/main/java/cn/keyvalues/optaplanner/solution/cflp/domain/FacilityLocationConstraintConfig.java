@@ -10,17 +10,17 @@ import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSo
 @ConstraintConfiguration
 public class FacilityLocationConstraintConfig {
 
-    public static final String FACILITY_CAPACITY = "facility capacity";
+    public static final String FACILITY_CAPACITY = "容量";
     // public static final String FACILITY_SETUP_COST = "facility setup cost";
-    public static final String DISTANCE_FROM_FACILITY = "distance from facility";
-    public static final String SERVER_RADIUS = "server radius";
-    public static final String UNIQUE_ENTITY="unique entity";
-    public static final String GREEDY_DEMAND="greedy demand";
-    public static final String LESS_STATION="less station";
-    public static final String NO_REST_DEMAND="no rest demand";
-    public static final String NO_OVER_DEMAND="no over demand";
+    public static final String DISTANCE_FROM_FACILITY = "尽可能分配距离更近的";
+    public static final String SERVER_RADIUS = "服务站半径";
+    public static final String UNIQUE_ENTITY="唯一分配";
+    public static final String GREEDY_DEMAND="尽可能多的分配需求";
+    public static final String LESS_STATION="更少的服务站";
+    public static final String NO_REST_DEMAND="不剩余需求";
+    public static final String NO_OVER_DEMAND="不额外分配";
     
-    public static final String MATCH_LEVEL="match level";
+    public static final String MATCH_LEVEL="等级匹配";
 
     /**
      * 不超出服务站容量
