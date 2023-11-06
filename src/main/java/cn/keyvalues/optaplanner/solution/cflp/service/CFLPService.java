@@ -40,6 +40,12 @@ public interface CFLPService extends SolverService<ProblemInputVo>{
      */
     void addCustomerRealTime(UUID problemID,Customer newCustomer) throws RuntimeException;
 
+    /**
+     * 列出约束
+     * @return
+     */
+    List<String> listConstraints();
+
     /**************** CURD ****************/
     
     List<Map<String,Object>> listProblem();

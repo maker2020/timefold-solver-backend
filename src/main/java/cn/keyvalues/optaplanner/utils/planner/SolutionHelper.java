@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.utils;
+package cn.keyvalues.optaplanner.utils.planner;
 
 import java.util.HashMap;
 import java.util.Map;

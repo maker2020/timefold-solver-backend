@@ -4,11 +4,14 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurati
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 
+/**
+ * 目标函数的系数(或者说 约束的权重) 可以由用户自己去配置，返回一个约束列表。
+ */
 @ConstraintConfiguration
 public class FacilityLocationConstraintConfig {
 
     public static final String FACILITY_CAPACITY = "facility capacity";
-    public static final String FACILITY_SETUP_COST = "facility setup cost";
+    // public static final String FACILITY_SETUP_COST = "facility setup cost";
     public static final String DISTANCE_FROM_FACILITY = "distance from facility";
     public static final String SERVER_RADIUS = "server radius";
     public static final String UNIQUE_ENTITY="unique entity";
@@ -79,7 +82,7 @@ public class FacilityLocationConstraintConfig {
     /**
     * 设施修建费
     */
-    @ConstraintWeight(FACILITY_SETUP_COST)
-    HardMediumSoftLongScore facilitySetupCost = HardMediumSoftLongScore.ofSoft(2);
+    // @ConstraintWeight(FACILITY_SETUP_COST)
+    // HardMediumSoftLongScore facilitySetupCost = HardMediumSoftLongScore.ofSoft(2);
 
 }

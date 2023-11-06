@@ -28,7 +28,7 @@ import cn.keyvalues.optaplanner.solution.maprouting.domain.entity.TSPSolutionEnt
 import cn.keyvalues.optaplanner.solution.maprouting.service.TSPSolutionService;
 import cn.keyvalues.optaplanner.solution.maprouting.service.TSPService;
 import cn.keyvalues.optaplanner.utils.BeanUtils;
-import cn.keyvalues.optaplanner.utils.SolutionHelper;
+import cn.keyvalues.optaplanner.utils.planner.SolutionHelper;
 
 import static cn.keyvalues.optaplanner.utils.Utils.redisUtil;
 

@@ -1,12 +1,18 @@
 package cn.keyvalues.optaplanner.solution.cflp.service.impl;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -18,16 +24,18 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import cn.keyvalues.optaplanner.common.Result;
+import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ConstraintConfig;
 import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ProblemInputVo;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
+import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationConstraintConfig;
 import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationSolution;
 import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
 import cn.keyvalues.optaplanner.solution.cflp.domain.entity.CFLPSolutionEntity;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPService;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPSolutionService;
 import cn.keyvalues.optaplanner.utils.BeanUtils;
-import cn.keyvalues.optaplanner.utils.SolutionHelper;
+import cn.keyvalues.optaplanner.utils.planner.SolutionHelper;
 
 @Service
 public class CFLPServiceImpl implements CFLPService{
@@ -47,6 +55,13 @@ public class CFLPServiceImpl implements CFLPService{
     @Override
     public Result<?> solveAsync(ProblemInputVo problemInputVo) {
         FacilityLocationSolution initializedSolution = generateSolution(problemInputVo);
+        try {
+            defineConstraintConfig(initializedSolution,problemInputVo.getConstraintConfig(),HardMediumSoftLongScore.class);
+        } catch (NoSuchFieldException e) {
+            return Result.failed("约束配置异常");
+        } catch (Exception e){
+            return Result.failed(e.getMessage());
+        }
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));
         // 随机问题ID，用于跟踪问题
         UUID problemID=UUID.randomUUID();
@@ -84,6 +99,47 @@ public class CFLPServiceImpl implements CFLPService{
     @Override
     public Map<String, Object> pollUpdate(UUID problemID, long intervalTime) throws Exception {
         return solutionHelper.pollUpdate(problemID, intervalTime);
+    }
+
+    /**
+     * 根据用户自定义约束配置，生成新配置
+     */
+    private <T> void defineConstraintConfig(T solution,List<ConstraintConfig> constraintsConfig,Class<?> scoreClass) throws Exception{
+        Field constraintProviderField=null;
+        Class<?> clazz = solution.getClass(); 
+        for (Field field : clazz.getDeclaredFields()) {
+            if(field.isAnnotationPresent(ConstraintConfigurationProvider.class)){
+                constraintProviderField=field;
+                break;
+            }
+        }
+        if(constraintProviderField==null){
+            throw new NoSuchFieldException("the solution:"+solution.getClass().getName()+" not exist constraint configuration provider.");
+        }
+        Object constraintConfig=constraintProviderField.getType().getConstructor().newInstance();
+        for (ConstraintConfig config : constraintsConfig) {
+            String constraintID = config.getConstraintID();
+            String constraintLevel = config.getConstraintLevel();
+            Long constraintWeight = config.getConstraintWeight();
+
+            Class<?> constraintProvider  = constraintProviderField.getType();
+            for (Field field : constraintProvider.getDeclaredFields()) {
+                if(field.isAnnotationPresent(ConstraintWeight.class)){
+                    ConstraintWeight annotation = field.getAnnotation(ConstraintWeight.class);
+                    String constraintDesc = annotation.value();
+                    if(constraintDesc.equals(constraintID)){
+                        field.setAccessible(true);
+                        // 只用long
+                        Method staticMethod = scoreClass.getDeclaredMethod("of"+constraintLevel, long.class);
+                        Object scoreInstance = staticMethod.invoke(null, constraintWeight);
+                        field.set(constraintConfig, scoreInstance);
+                        break;
+                    }
+                }
+            }
+        }
+        constraintProviderField.setAccessible(true);
+        constraintProviderField.set(solution, constraintConfig);
     }
 
     private FacilityLocationSolution generateSolution(ProblemInputVo problemInputVo){
@@ -218,6 +274,18 @@ public class CFLPServiceImpl implements CFLPService{
     @Override
     public boolean deleteProblem(UUID problemID) {
         return solutionService.remove(new QueryWrapper<CFLPSolutionEntity>().eq("problem_id", problemID.toString()));
+    }
+
+    @Override
+    public List<String> listConstraints() {
+        Class<FacilityLocationConstraintConfig> clazz = FacilityLocationConstraintConfig.class;
+        return Arrays.stream(clazz.getFields()).map(field->{
+            try {
+                return field.get(null).toString();
+            } catch (Exception e){
+                return "error";
+            }
+        }).toList();
     }
     
 }
