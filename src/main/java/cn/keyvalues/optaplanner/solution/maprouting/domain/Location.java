@@ -1,8 +1,8 @@
 package cn.keyvalues.optaplanner.solution.maprouting.domain;
 
 import cn.keyvalues.optaplanner.common.enums.TacticsEnum;
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.geo.Point;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -5,7 +5,7 @@ import java.util.Map;
 import com.alibaba.fastjson.JSONObject;
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.common.enums.TacticsEnum;
-import cn.keyvalues.optaplanner.geo.Point;
+import cn.keyvalues.optaplanner.common.geo.Point;
 
 public interface BaiduDirection {
     

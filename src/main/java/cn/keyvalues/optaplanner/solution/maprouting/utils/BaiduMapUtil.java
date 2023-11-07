@@ -1,7 +1,8 @@
 package cn.keyvalues.optaplanner.solution.maprouting.utils;
 
 import com.alibaba.fastjson.JSONObject;
-import cn.keyvalues.optaplanner.geo.Point;
+
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.utils.Md5Util;
 import cn.keyvalues.optaplanner.utils.RedisUtil;
 

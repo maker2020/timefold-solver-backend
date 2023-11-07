@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cn.keyvalues.optaplanner.common.Result;
-import cn.keyvalues.optaplanner.constant.CommonConstant;
+import cn.keyvalues.optaplanner.common.constant.CommonConstant;
 import cn.keyvalues.optaplanner.solution.maprouting.controller.vo.ProblemInputVo;
 import cn.keyvalues.optaplanner.solution.maprouting.service.TSPService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 
 import com.alibaba.fastjson.JSON;
 
-import cn.keyvalues.optaplanner.geo.Point;
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
 import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationSolution;

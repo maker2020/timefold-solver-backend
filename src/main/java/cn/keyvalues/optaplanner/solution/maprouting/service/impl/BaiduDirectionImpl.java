@@ -10,7 +10,7 @@ import org.springframework.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.common.enums.TacticsEnum;
-import cn.keyvalues.optaplanner.geo.Point;
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.solution.maprouting.api.BaiduDirection;
 import cn.keyvalues.optaplanner.solution.maprouting.utils.BaiduMapUtil;
 

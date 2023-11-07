@@ -9,9 +9,9 @@ import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable
 
 import com.alibaba.fastjson.annotation.JSONField;
 
+import cn.keyvalues.optaplanner.common.constant.RedisConstant;
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.constant.RedisConstant;
-import cn.keyvalues.optaplanner.geo.Point;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

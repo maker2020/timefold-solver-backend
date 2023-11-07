@@ -1,9 +1,8 @@
 package cn.keyvalues.optaplanner.solution.test.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.geo.Point;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.constant;
+package cn.keyvalues.optaplanner.common.constant;
 
 public interface CommonConstant {
     

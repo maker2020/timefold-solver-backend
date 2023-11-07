@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 
 import com.alibaba.fastjson.JSON;
 
-import cn.keyvalues.optaplanner.geo.Point;
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.solution.test.domain.Customer;
 import cn.keyvalues.optaplanner.solution.test.domain.FacilityLocationSolution;
 import cn.keyvalues.optaplanner.solution.test.domain.Location;

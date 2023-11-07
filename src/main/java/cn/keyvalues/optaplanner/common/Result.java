@@ -2,8 +2,7 @@ package cn.keyvalues.optaplanner.common;
 
 import java.io.Serializable;
 
-import cn.keyvalues.optaplanner.constant.CommonConstant;
-
+import cn.keyvalues.optaplanner.common.constant.CommonConstant;
 import lombok.Data;
 
 @Data

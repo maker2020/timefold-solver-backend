@@ -1,7 +1,7 @@
 package cn.keyvalues.optaplanner.solution.cflp.domain;
 
+import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
-import cn.keyvalues.optaplanner.geo.Point;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

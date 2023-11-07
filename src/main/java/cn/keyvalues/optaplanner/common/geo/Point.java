@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.geo;
+package cn.keyvalues.optaplanner.common.geo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
