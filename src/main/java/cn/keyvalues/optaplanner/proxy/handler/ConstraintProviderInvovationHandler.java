@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.proxy;
+package cn.keyvalues.optaplanner.proxy.handler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -12,7 +12,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -38,7 +37,7 @@ public class ConstraintProviderInvovationHandler implements InvocationHandler{
             }
             List<Constraint> definedConstraints=new ArrayList<>();
             for(String constraintId:userConstraints){
-                Class<FacilityLocationConstraint> clazz=FacilityLocationConstraint.class;
+                Class<? extends ConstraintProvider> clazz=target.getClass();
                 Method constraintDefinedMethod = clazz.getDeclaredMethod(constraintId, ConstraintFactory.class);
                 constraintDefinedMethod.setAccessible(true);
                 Constraint constraint = (Constraint)constraintDefinedMethod.invoke(target, args);

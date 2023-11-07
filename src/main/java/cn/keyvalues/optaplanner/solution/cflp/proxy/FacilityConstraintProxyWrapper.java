@@ -1,17 +1,18 @@
-package cn.keyvalues.optaplanner.proxy;
+package cn.keyvalues.optaplanner.solution.cflp.proxy;
 
 import java.lang.reflect.Proxy;
 
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import cn.keyvalues.optaplanner.proxy.handler.ConstraintProviderInvovationHandler;
 import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
 
-public class ConstraintProviderProxyWrapper implements ConstraintProvider{
+public class FacilityConstraintProxyWrapper implements ConstraintProvider{
 
     private ConstraintProvider proxy;
 
-    public ConstraintProviderProxyWrapper(){
+    public FacilityConstraintProxyWrapper(){
         FacilityLocationConstraint constraintProvider=new FacilityLocationConstraint();
         ConstraintProviderInvovationHandler handler=new ConstraintProviderInvovationHandler(constraintProvider);
         ConstraintProvider proxy=(ConstraintProvider)Proxy

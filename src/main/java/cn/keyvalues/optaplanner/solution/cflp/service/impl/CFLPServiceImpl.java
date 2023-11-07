@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 import cn.keyvalues.optaplanner.common.Result;
-import cn.keyvalues.optaplanner.proxy.ConstraintProviderProxyWrapper;
 import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ProblemInputVo;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.Customer;
@@ -30,6 +29,7 @@ import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationConstraintC
 import cn.keyvalues.optaplanner.solution.cflp.domain.FacilityLocationSolution;
 import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
 import cn.keyvalues.optaplanner.solution.cflp.domain.entity.CFLPSolutionEntity;
+import cn.keyvalues.optaplanner.solution.cflp.proxy.FacilityConstraintProxyWrapper;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPService;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPSolutionService;
 import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
@@ -73,7 +73,7 @@ public class CFLPServiceImpl implements CFLPService{
         // 动态配置约束
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setInitializingScoreTrend("ANY");
-        scoreDirectorFactoryConfig.setConstraintProviderClass(ConstraintProviderProxyWrapper.class);
+        scoreDirectorFactoryConfig.setConstraintProviderClass(FacilityConstraintProxyWrapper.class);
         solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
 
         solverConfig.setTerminationConfig(new TerminationConfig().withSecondsSpentLimit(problemInputVo.getTimeLimit()));
