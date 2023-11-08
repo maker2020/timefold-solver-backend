@@ -1,0 +1,90 @@
+{
+  "problemName": "string",
+  "timeLimit": 0,
+  "constraintConfig": [
+    {
+      "constraintID": "string",
+      "constraintLevel": "string",
+      "constraintWeight": 0
+    }
+  ],
+  "selectedConstraints": [
+    "string"
+  ],
+  "customers": [
+    {
+      "maxDemand": 0,
+      "location": {
+        "name": "string",
+        "point": {
+          "longitude": 0,
+          "latitude": 0
+        }
+      },
+      "demandLevel": 0
+    }
+  ],
+  "serverStations": [
+    {
+      "location": {
+        "name": "string",
+        "point": {
+          "longitude": 0,
+          "latitude": 0
+        }
+      },
+      "maxCapacity": 0,
+      "radius": 0,
+      "demandLevel": 0,
+      "color": "string"
+    }
+  ],
+  "defineVo": {
+    "operator": {
+      "opType": "ConstraintFactory",
+      "opMethod": {
+        "method": "forEach",
+        "parameter": {
+          "map": {
+            "className": "cn.keyvalues.optaplanner.solution.cflp.domain.Customer"
+          }
+        }
+      },
+      "nextOperator": {
+        "opType": "UniConstraintStream",
+        "opMethod": {
+          "method": "filter",
+          "parameter": {
+            "map": {
+              
+            }
+          }
+        },
+        "nextOperator": {
+          "opType": "UniConstraintStream",
+          "opMethod": {
+            "method": "penalize",
+            "parameter": {
+              "map": {
+                
+              }
+            }
+          },
+          "nextOperator":{
+            "opType": "UniConstraintBuilder",
+            "opMethod": {
+              "method": "asConstraint",
+              "parameter": {
+                "map": {
+                  
+                }
+              }
+            },
+            "nextOperator": null
+          }
+        }
+      }
+    },
+    "constraintID": "CustomeConstraint"
+  }
+}

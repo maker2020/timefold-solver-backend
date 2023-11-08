@@ -36,6 +36,7 @@ import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
 import cn.keyvalues.optaplanner.utils.BeanUtils;
 import cn.keyvalues.optaplanner.utils.planner.SolutionHelper;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class CFLPServiceImpl implements CFLPService{
@@ -45,7 +46,8 @@ public class CFLPServiceImpl implements CFLPService{
     private CFLPSolutionService solutionService;
 
     public CFLPServiceImpl(@Qualifier("cflpConfig") SolverConfig solverConfig,
-            SolutionHelper solutionHelper,CFLPSolutionService solutionService) {
+            SolutionHelper solutionHelper,CFLPSolutionService solutionService,
+            HttpServletRequest request) {
         this.solverConfig = solverConfig;
         this.solutionHelper=solutionHelper;
         this.solutionService=solutionService;

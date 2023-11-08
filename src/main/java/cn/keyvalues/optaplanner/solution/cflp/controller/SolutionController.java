@@ -1,5 +1,7 @@
 package cn.keyvalues.optaplanner.solution.cflp.controller;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -13,10 +15,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSON;
+
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.common.constant.CommonConstant;
+import cn.keyvalues.optaplanner.common.entity.ConstraintDefinition;
+import cn.keyvalues.optaplanner.common.service.IConstraintDefinitionService;
+import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo;
+import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo.OpMethodEnum;
+import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo.OpTypeEnum;
 import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ProblemInputVo;
+import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPService;
+import cn.keyvalues.optaplanner.solution.maprouting.domain.Customer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +41,9 @@ public class SolutionController {
     
     @Autowired
     CFLPService cflpService;
+
+    @Autowired
+    IConstraintDefinitionService definitionService;
 
     @PostMapping("/solveAsync")
     @Operation(summary = "根据客户、服务站，求解优化方案",description = "返回problemID")
@@ -97,6 +111,39 @@ public class SolutionController {
     @Operation(summary = "程序已定义的约束列表")
     public Result<?> listDefinedConstrains(){
         return Result.OK(cflpService.listDefinedConstraints());
+    }
+
+    @GetMapping("/listStreamMethod")
+    @Operation(summary = "操作方法列表")
+    public Result<?> listStreamMethod(){
+        return Result.OK(OpMethodEnum.values());
+    }
+
+    @GetMapping("/listStreamObject")
+    @Operation(summary = "操作流类型列表")
+    public Result<?> listStreamObject(){
+        return Result.OK(OpTypeEnum.values());
+    }
+
+    @GetMapping("/listTargetClass")
+    @Operation(summary = "目标类列表")
+    public Result<?> listTargetClass(){
+        // 从Solution读有problemFact的和planningEntity的，或者写死
+        Map<String,Object> clazz=new HashMap<>();
+        clazz.put("cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation", Arrays.stream(ServerStation.class.getDeclaredFields()).map(f->f.getName()).toList());
+        clazz.put("cn.keyvalues.optaplanner.solution.maprouting.domain.Customer",Arrays.stream(Customer.class.getDeclaredFields()).map(f->f.getName()).toList());
+        return Result.OK(clazz);
+    }
+
+    @PostMapping("/defineConstraint")
+    @Operation(summary = "定义一个约束")
+    public Result<?> defineConstraint(@RequestBody ConstraintDefineVo define){
+        // 只做保存就行，因为constraint需要constraintFactory,在使用的时候再根据定义生成就可以
+        ConstraintDefinition definition = new ConstraintDefinition();
+        definition.setConstraintDefinition(JSON.toJSONString(define));
+        definition.setSolutionModel(getClass().getPackageName());
+        boolean success=definitionService.save(definition);
+        return success?Result.OK():Result.failed("");
     }
 
     /**************** CRUD ****************/

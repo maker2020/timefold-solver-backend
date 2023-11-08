@@ -41,11 +41,11 @@ public class CodeGenerator {
                 })
                 .packageConfig(builder -> {
                     // builder.parent("com.ya.boottest.fruit.autoCode"); // 设置父包名
-                    builder.parent("cn.keyvalues.optaplanner.maprouting"); // 设置父包名
-                    builder.entity("domain.entity"); // 实体包路径
+                    builder.parent("cn.keyvalues.optaplanner.common"); // 设置父包名
+                    builder.entity("entity"); // 实体包路径
                 })
                 .strategyConfig(builder -> {
-                    builder.addInclude("storehouse") // 设置需要生成的表名
+                    builder.addInclude("constraint_definition") // 设置需要生成的表名
                             .controllerBuilder().enableFileOverride().enableRestStyle().enableHyphenStyle()
                             .serviceBuilder().enableFileOverride()
                             .entityBuilder().enableFileOverride().enableLombok().idType(IdType.ASSIGN_ID)
