@@ -25,9 +25,11 @@ import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo;
 import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo.OpMethodEnum;
 import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo.OpTypeEnum;
 import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ProblemInputVo;
+import cn.keyvalues.optaplanner.solution.cflp.domain.Assign;
 import cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation;
 import cn.keyvalues.optaplanner.solution.cflp.service.CFLPService;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Customer;
+import cn.keyvalues.optaplanner.utils.Utils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -132,7 +134,14 @@ public class SolutionController {
         Map<String,Object> clazz=new HashMap<>();
         clazz.put("cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation", Arrays.stream(ServerStation.class.getDeclaredFields()).map(f->f.getName()).toList());
         clazz.put("cn.keyvalues.optaplanner.solution.maprouting.domain.Customer",Arrays.stream(Customer.class.getDeclaredFields()).map(f->f.getName()).toList());
+        clazz.put("cn.keyvalues.optaplanner.solution.maprouting.domain.Assign",Arrays.stream(Assign.class.getDeclaredFields()).map(f->f.getName()).toList());
         return Result.OK(clazz);
+    }
+
+    @GetMapping("/childProperties")
+    @Operation(summary = "获取类型可选属性")
+    public Result<?> childProperties(String className){
+        return Result.OK(Utils.childProperties(className));
     }
 
     @PostMapping("/defineConstraint")
