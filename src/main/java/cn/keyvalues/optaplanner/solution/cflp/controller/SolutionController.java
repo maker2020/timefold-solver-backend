@@ -159,6 +159,13 @@ public class SolutionController {
         return Result.OK(definitionService.list());
     }
 
+    @DeleteMapping("/deleteCustomeConstraint")
+    @Operation(summary = "删除自定义约束")
+    public Result<?> deleteCustomeConstraint(Long id){
+        boolean success=definitionService.removeById(id);
+        return success?Result.OK():Result.failed("");
+    }
+
     /**************** CRUD ****************/
     
     @GetMapping("/listProblem")
