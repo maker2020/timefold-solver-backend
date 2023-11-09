@@ -131,8 +131,8 @@ public class SolutionController {
         // 从Solution读有problemFact的和planningEntity的，或者写死
         Map<String,Object> clazz=new HashMap<>();
         clazz.put("cn.keyvalues.optaplanner.solution.cflp.domain.ServerStation", Arrays.stream(ServerStation.class.getDeclaredFields()).map(f->f.getName()).toList());
-        clazz.put("cn.keyvalues.optaplanner.solution.maprouting.domain.Customer",Arrays.stream(Customer.class.getDeclaredFields()).map(f->f.getName()).toList());
-        clazz.put("cn.keyvalues.optaplanner.solution.maprouting.domain.Assign",Arrays.stream(Assign.class.getDeclaredFields()).map(f->f.getName()).toList());
+        clazz.put("cn.keyvalues.optaplanner.solution.cflp.domain.Customer",Arrays.stream(Customer.class.getDeclaredFields()).map(f->f.getName()).toList());
+        clazz.put("cn.keyvalues.optaplanner.solution.cflp.domain.Assign",Arrays.stream(Assign.class.getDeclaredFields()).map(f->f.getName()).toList());
         return Result.OK(clazz);
     }
 
