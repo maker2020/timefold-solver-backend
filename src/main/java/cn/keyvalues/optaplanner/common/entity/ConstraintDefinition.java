@@ -1,8 +1,13 @@
 package cn.keyvalues.optaplanner.common.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo;
+import cn.keyvalues.optaplanner.mybatis.handler.ConstraintDefinitionHandler;
+
 import java.io.Serializable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -18,7 +23,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@TableName("constraint_definition")
+@TableName(value = "constraint_definition",autoResultMap = true)
 @Schema(name = "ConstraintDefinition", description = "$!{table.comment}")
 public class ConstraintDefinition implements Serializable {
 
@@ -27,7 +32,8 @@ public class ConstraintDefinition implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
-    private String constraintDefinition;
+    @TableField(typeHandler = ConstraintDefinitionHandler.class)
+    private ConstraintDefineVo constraintDefinition;
 
     private String solutionModel;
 }

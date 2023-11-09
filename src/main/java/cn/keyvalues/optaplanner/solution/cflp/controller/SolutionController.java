@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibaba.fastjson.JSON;
-
 import cn.keyvalues.optaplanner.common.Result;
 import cn.keyvalues.optaplanner.common.constant.CommonConstant;
 import cn.keyvalues.optaplanner.common.entity.ConstraintDefinition;
@@ -149,10 +147,16 @@ public class SolutionController {
     public Result<?> defineConstraint(@RequestBody ConstraintDefineVo define){
         // 只做保存就行，因为constraint需要constraintFactory,在使用的时候再根据定义生成就可以
         ConstraintDefinition definition = new ConstraintDefinition();
-        definition.setConstraintDefinition(JSON.toJSONString(define));
+        definition.setConstraintDefinition(define);
         definition.setSolutionModel(getClass().getPackageName());
         boolean success=definitionService.save(definition);
         return success?Result.OK():Result.failed("");
+    }
+
+    @GetMapping("/listCustomeConstraint")
+    @Operation(summary = "列出自定义约束列表")
+    public Result<?> listCustomeConstraint(){
+        return Result.OK(definitionService.list());
     }
 
     /**************** CRUD ****************/

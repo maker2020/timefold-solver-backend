@@ -2,15 +2,18 @@ package cn.keyvalues.optaplanner.solution.maprouting.controller.vo;
 
 import java.util.List;
 
+import cn.keyvalues.optaplanner.common.vo.PlannerInputVo;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Customer;
 import cn.keyvalues.optaplanner.solution.maprouting.domain.Visitor;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Schema(description = "线路规划的问题输入对象")
 @Data
-public class ProblemInputVo {
+@EqualsAndHashCode(callSuper = false)
+public class ProblemInputVo extends PlannerInputVo {
 
     @Schema(description = "某次求解的问题命名")
     private String problemName;

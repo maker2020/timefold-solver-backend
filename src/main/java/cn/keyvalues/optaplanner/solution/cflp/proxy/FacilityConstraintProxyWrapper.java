@@ -11,7 +11,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import cn.keyvalues.optaplanner.common.vo.ConstraintDefineVo;
+import cn.keyvalues.optaplanner.common.entity.ConstraintDefinition;
 import cn.keyvalues.optaplanner.proxy.handler.ConstraintProviderInvovationHandler;
 import cn.keyvalues.optaplanner.solution.cflp.solver.FacilityLocationConstraint;
 import cn.keyvalues.optaplanner.utils.planner.ConstraintGenerator;
@@ -57,9 +57,9 @@ public class FacilityConstraintProxyWrapper implements ConstraintProvider{
         Object defineListObj = request.getAttribute("defineList");
         List<Constraint> list=new ArrayList<>();
         if(defineListObj!=null){
-            List<ConstraintDefineVo> defineList=(List<ConstraintDefineVo>)defineListObj;
-            for(ConstraintDefineVo define : defineList){
-                ConstraintGenerator generator=new ConstraintGenerator(define, constraintFactory);
+            List<ConstraintDefinition> defineList=(List<ConstraintDefinition>)defineListObj;
+            for(ConstraintDefinition define : defineList){
+                ConstraintGenerator generator=new ConstraintGenerator(define.getConstraintDefinition(), constraintFactory);
                 Constraint constraint = generator.generate();
                 list.add(constraint);
             }
