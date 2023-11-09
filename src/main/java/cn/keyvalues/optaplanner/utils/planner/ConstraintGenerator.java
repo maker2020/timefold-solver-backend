@@ -3,7 +3,10 @@ package cn.keyvalues.optaplanner.utils.planner;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,7 +97,7 @@ public class ConstraintGenerator {
         parameter.setClassName("cn.keyvalues.optaplanner.solution.cflp.domain.Customer");
         Expression expression=new Expression();
         expression.setConnector("&&");
-        expression.setExpression("t.maxDemand>1");
+        expression.setExpression("t.maxDemand>10");
         
         List<Expression> list=new ArrayList<>();
         list.add(expression);
@@ -106,7 +109,7 @@ public class ConstraintGenerator {
     /**
      * 目前demo全按二元算式处理，后改为连续
      */
-    private static boolean predicate(Object target,Parameter parameter){
+    static boolean predicate(Object target,Parameter parameter){
         try{
             List<Expression> expressionList = parameter.getExpressionList();
 
@@ -133,7 +136,7 @@ public class ConstraintGenerator {
      * sample: a.b>a.c , a.b>100
      * expression example: (a.b+a.c)+10 > 100
      */
-    private static boolean getExpressionValue(Object target,String expression) throws Exception{
+    static boolean getExpressionValue(Object target,String expression) throws Exception{
         String[] logicalOperators=new String[]{">","<","=",">=","<=","&&","||"};
         String regex = String.join("|", Arrays.stream(logicalOperators)
                 .map(Pattern::quote) // 对特殊字符进行转义
@@ -167,9 +170,9 @@ public class ConstraintGenerator {
     }
 
     /**
-     * 子表达式 (demo先简单实现，不考虑复合式子)
+     * 子表达式(复合式子)
      */
-    private static Object getExpValue(Object target,String exp) throws Exception{
+    static Object getExpValue(Object target,String exp) throws Exception{
         if(!exp.contains(".")){
             // number or boolean
             if(NumberUtils.isCreatable(exp)){
@@ -182,11 +185,20 @@ public class ConstraintGenerator {
             throw new IllegalArgumentException();
         }
         
-        return getPropertyValue(target, exp);
+        
+        String regex = ".*\\d.*";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(exp);
+        if (matcher.matches()) {
+            ExpCalculator calculator=new ExpCalculator();
+            return calculator.numberCalculate(exp, target);
+        }else{
+            return getPropertyValue(target, exp);
+            // throw new UnsupportedOperationException();
+        }
     }
-    
 
-    private static Object getPropertyValue(Object target,String propertyExp) throws Exception{
+    static Object getPropertyValue(Object target,String propertyExp) throws Exception{
         Class<?> clazz = target.getClass();
         String[] expProperties = propertyExp.split("\\.");
         Object obj=target;
@@ -207,5 +219,134 @@ public class ConstraintGenerator {
     // private long reward(Object target,Parameter parameter){
     //     return 0;
     // }
+
+}
+
+// for case: (a.c+a.b)+10
+/**
+ * 不支持计算中含有浮点数。
+ */
+class ExpCalculator{
+
+    Stack<String> stack=new Stack<>();
+    Map<String,Integer> operatorLevel=new HashMap<>();
+    Stack<String> calculateStack=new Stack<>();
+
+    public ExpCalculator(){
+        operatorLevel.put("+", 0);
+        operatorLevel.put("-", 0);
+        operatorLevel.put("*", 1);
+        operatorLevel.put("/", 1);
+        operatorLevel.put("(", 99);
+        operatorLevel.put(")", -99);
+    }
+
+    // for case: (a.c+a.b)+10
+    public double numberCalculate(String s,Object target) throws Exception{
+        s=parsePropertyValue(s,target);
+        String suffixStr = toSuffix(s.trim());
+        double right=0,left=0;
+        String[] arrS = suffixStr.split(" ");
+        for (int i = 0; i < arrS.length; i++) {
+            String t = arrS[i];
+            if ("".equals(t))
+                continue;
+            if (NumberUtils.isCreatable(t)) {
+                calculateStack.push(t);
+            } else {
+                if(!calculateStack.empty()) {
+                    right = Double.parseDouble(calculateStack.pop());
+                }
+                if(!calculateStack.empty()){
+                    left = Double.parseDouble(calculateStack.pop());
+                }else{
+                    left = 0;
+                }
+                switch (t) {
+                    case "+"->calculateStack.push((left+right)+"");
+                    case "-"->calculateStack.push((left-right)+"");
+                    case "*"->calculateStack.push((left*right)+"");
+                    case "/"->calculateStack.push((left/right)+"");
+                    default->throw new IllegalArgumentException();
+                }
+            }
+        }
+        if (calculateStack.size() == 1)
+            right = Double.parseDouble(calculateStack.pop());
+        return right;
+    }
+
+    // 多个则target改为map
+    private String parsePropertyValue(String s,Object target) throws Exception{
+        String[] ops=new String[]{"+","-","*","/","(",")"};
+        String regex = String.join("|", Arrays.stream(ops)
+                .map(Pattern::quote) // 对特殊字符进行转义
+                .toArray(String[]::new));
+        String[] split = s.split(regex);
+        for(String item:split){
+            if(item.contains(".")){
+                Object propertyValue = ConstraintGenerator.getPropertyValue(target,item);
+                s=s.replace(item, propertyValue.toString());
+            }
+        }
+        return s;
+    }
+
+    private String toSuffix(String s) {
+         for(int i=0;i<s.length();i++){
+            try {
+                if("-".equals(s.charAt(i)+"") && "(".equals(s.charAt(i-1)+"")){
+                    s=s.substring(0, i)+"0"+s.substring(i, s.length());
+                }
+            } catch (Exception e) {
+                s="0"+s;
+            }
+        }
+        StringBuilder resBuilder = new StringBuilder();
+        StringBuilder numberBuilder = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c >= 48 && c < 58) {
+                numberBuilder.append(c);
+                if (i != s.length() - 1)
+                    continue;
+            }
+            resBuilder.append(" " + numberBuilder.toString());
+            numberBuilder.setLength(0);
+            String cStr = c + "";
+            if (operatorLevel.get(cStr) == null)
+                continue;
+            int level = operatorLevel.get(cStr);
+            // )特殊处理
+            if(level==-99){
+                while (!stack.empty()) {
+                    if(operatorLevel.get(stack.peek())!=99){
+                        resBuilder.append(" "+stack.pop());
+                    }else{
+                        stack.pop();
+                        break;
+                    }
+                }
+            }else{
+                // 优先级小于等于栈顶需要出栈直至大于于
+                while (!stack.empty()) {
+                    int topLevel = operatorLevel.get(stack.peek());
+                    // (特殊处理 ：只接受)才弹出
+                    if(topLevel==99&&level!=-99) break;
+                    // 大于栈顶
+                    if (level > topLevel) {
+                        break;
+                    }
+                    resBuilder.append(" " + stack.pop());
+                }
+                stack.push(cStr);
+            }
+        }
+        // 全部出栈
+        while (!stack.empty()) {
+            resBuilder.append(" " + stack.pop());
+        }
+        return resBuilder.substring(1);
+    }
 
 }
