@@ -45,8 +45,4 @@ public class Utils {
         return list;
     }
 
-    public static void main(String[] args) {
-        System.out.println(childProperties("long"));
-    }
-
 }

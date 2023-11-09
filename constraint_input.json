@@ -45,9 +45,15 @@
       "opMethod": {
         "method": "forEach",
         "parameter": {
-          "map": {
-            "className": "cn.keyvalues.optaplanner.solution.cflp.domain.Customer"
-          }
+          "className": "cn.keyvalues.optaplanner.solution.cflp.domain.Customer",
+          "expressionList": [
+           {
+            "leftPhrase": true,
+            "rightPhrase": true,
+            "expression": "t.maxDemand>100",
+            "connector": "string"
+           }
+          ]
         }
       },
       "nextOperator": {
@@ -55,9 +61,15 @@
         "opMethod": {
           "method": "filter",
           "parameter": {
-            "map": {
-              
-            }
+            "className": "cn.keyvalues.optaplanner.solution.cflp.domain.Customer",
+            "expressionList": [
+             {
+              "leftPhrase": true,
+              "rightPhrase": true,
+              "expression": "t.maxDemand>100",
+              "connector": "string"
+             }
+            ]
           }
         },
         "nextOperator": {
@@ -65,9 +77,15 @@
           "opMethod": {
             "method": "penalize",
             "parameter": {
-              "map": {
-                
-              }
+              "className": "cn.keyvalues.optaplanner.solution.cflp.domain.Customer",
+              "expressionList": [
+               {
+                "leftPhrase": true,
+                "rightPhrase": true,
+                "expression": "t.maxDemand>100",
+                "connector": "string"
+               }
+              ]
             }
           },
           "nextOperator":{
@@ -75,9 +93,15 @@
             "opMethod": {
               "method": "asConstraint",
               "parameter": {
-                "map": {
-                  
-                }
+                "className": "cn.keyvalues.optaplanner.solution.cflp.domain.Customer",
+                "expressionList": [
+                 {
+                  "leftPhrase": true,
+                  "rightPhrase": true,
+                  "expression": "t.maxDemand>100",
+                  "connector": "string"
+                 }
+                ]
               }
             },
             "nextOperator": null

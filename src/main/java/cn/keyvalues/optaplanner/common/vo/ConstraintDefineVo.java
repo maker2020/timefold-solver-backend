@@ -1,6 +1,6 @@
 package cn.keyvalues.optaplanner.common.vo;
 
-import java.util.Map;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -14,7 +14,7 @@ public class ConstraintDefineVo {
     private String constraintID;
 
     @Schema(description = "操作对象")
-    @Getter
+    @Data
     public static class Operator{
 
         OpTypeEnum opType;
@@ -36,7 +36,30 @@ public class ConstraintDefineVo {
     @Data
     public static class Parameter{
 
-        Map<String,Object> map;
+        String className;
+        
+        /**
+         * 一个expression只含一个逻辑运算符
+         * 
+         * 可以用栈后缀运算，枚举运算符列表
+         */
+        List<Expression> expressionList;
+
+        @Schema(description = "逻辑表达式")
+        @Data
+        public static class Expression{
+
+            // 目前不支持括号
+            boolean leftPhrase;
+            boolean rightPhrase;
+
+            String expression;
+            
+            /**
+             * && ||
+             */
+            String connector;
+        }
 
     }
 
