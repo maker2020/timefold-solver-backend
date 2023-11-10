@@ -73,8 +73,8 @@ public class ConstraintGenerator {
         };
         curStream=stream==null?curStream:stream;
         ConstraintBuilder builder=switch(opMethod.getMethod()){
-            case penalize->((UniConstraintStream<?>)curStream).penalize(HardMediumSoftLongScore.ONE_SOFT);
-            case reward->((UniConstraintStream<?>)curStream).penalize(HardMediumSoftLongScore.ONE_SOFT);
+            case penalize->((UniConstraintStream<?>)curStream).penalize(scoreType(parameter),t->weightFunction(t, parameter));
+            case reward->((UniConstraintStream<?>)curStream).penalize(scoreType(parameter),t->weightFunction(t, parameter));
             default->null;
         };
         curBuilder=builder==null?curBuilder:builder;
@@ -104,6 +104,20 @@ public class ConstraintGenerator {
 
         parameter.setExpressionList(list);
         System.out.println(predicate(c, parameter));
+    }
+
+    static HardMediumSoftLongScore scoreType(Parameter parameter){
+        String scoreLevel = parameter.getScoreLevel();
+        return switch (scoreLevel) {
+            case "SOFT"->HardMediumSoftLongScore.ONE_SOFT;
+            case "MEDIUM"->HardMediumSoftLongScore.ONE_MEDIUM;
+            case "HARD"->HardMediumSoftLongScore.ONE_HARD;
+            default->HardMediumSoftLongScore.ONE_SOFT;
+        };
+    }
+
+    static int weightFunction(Object t,Parameter parameter){
+        return 1;
     }
 
     /**

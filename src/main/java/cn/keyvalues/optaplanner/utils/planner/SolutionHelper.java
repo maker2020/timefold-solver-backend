@@ -27,7 +27,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import cn.keyvalues.optaplanner.common.CircularRefRelease;
-import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ConstraintConfig;
+import cn.keyvalues.optaplanner.common.vo.ConstraintConfig;
 import lombok.extern.slf4j.Slf4j;
 
 /**

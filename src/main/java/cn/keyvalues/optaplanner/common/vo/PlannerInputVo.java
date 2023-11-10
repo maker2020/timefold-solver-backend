@@ -2,7 +2,6 @@ package cn.keyvalues.optaplanner.common.vo;
 
 import java.util.List;
 
-import cn.keyvalues.optaplanner.solution.cflp.controller.vo.ConstraintConfig;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

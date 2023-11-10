@@ -1,4 +1,4 @@
-package cn.keyvalues.optaplanner.solution.cflp.controller.vo;
+package cn.keyvalues.optaplanner.common.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
