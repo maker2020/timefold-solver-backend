@@ -26,23 +26,27 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Schema(description = "客户类")
 public class Customer extends AbstractPersistable{
     
+    @Schema(description = "最大需求")
     protected long maxDemand;
+    @Schema(description = "位置")
     protected Location location;
 
     /**
      * 需求等级，对应服务站可服务等级。没确定上限，按越高越好
      */
+    @Schema(description = "需求的等级")
     protected int demandLevel;
 
     @InverseRelationShadowVariable(sourceVariableName = "customer")
-    @Schema(hidden = true)
+    @Schema(hidden = true,description = "分配的服务站")
     protected List<Assign> assignedStations=new ArrayList<>();
 
     // @ShadowVariable(sourceEntityClass = Assign.class,sourceVariableName = "customer",variableListenerClass = RemainingDemandListener.class)
     @ShadowVariable(sourceEntityClass = Customer.class,sourceVariableName = "assignedStations",variableListenerClass = RemainingDemandListener.class)
-    @Schema(hidden = true)
+    @Schema(hidden = true,description = "剩余需求")
     protected Long remainingDemand;
 
     public Customer(long id,long maxDemand,Location location,int demandLevel){

@@ -2,6 +2,7 @@ package cn.keyvalues.optaplanner.solution.cflp.domain;
 
 import cn.keyvalues.optaplanner.common.geo.Point;
 import cn.keyvalues.optaplanner.common.persistence.AbstractPersistable;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
+@Schema(description = "位置类")
 public class Location extends AbstractPersistable{
 
     // Approximate Metric Equivalents for Degrees. At the equator for longitude and for latitude anywhere,
@@ -18,7 +20,9 @@ public class Location extends AbstractPersistable{
     
     public static final double METERS_PER_DEGREE = 111_000;
     
+    @Schema(description = "位置名称")
     protected String name=null;
+    @Schema(description = "坐标点")
     protected Point point;
 
     public Location(long id){

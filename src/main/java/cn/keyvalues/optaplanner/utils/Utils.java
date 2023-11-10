@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.extern.slf4j.Slf4j;
 
 @Component("utils")
@@ -37,6 +38,11 @@ public class Utils {
                 Map<String,Object> map=new HashMap<>();
                 map.put("name", field.getName());
                 map.put("className", field.getType().getName());
+                // 添加字段描述
+                if(field.isAnnotationPresent(Schema.class)){
+                    Schema schema = field.getAnnotation(Schema.class);
+                    map.put("desciption",schema.description());
+                }
                 list.add(map);
             }
         }catch(Exception e){
