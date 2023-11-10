@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.util.CollectionUtils;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -117,7 +118,27 @@ public class ConstraintGenerator {
     }
 
     static int weightFunction(Object t,Parameter parameter){
-        return 1;
+        List<Expression> expressionList = parameter.getExpressionList();
+        if(CollectionUtils.isEmpty(expressionList)) {
+            return 1;
+        }
+        if(expressionList.size()>1) {
+            throw new IllegalStateException();
+        }
+        Expression expression = expressionList.get(0);
+        String exp = expression.getExpression();
+        Object expValue;
+        try {
+            expValue = getExpValue(t, exp);
+            if(!(expValue instanceof Number)){
+                throw new IllegalStateException("权重表达式必须返回数字");
+            }
+            return ((Number)expValue).intValue();
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e){
+            throw new IllegalArgumentException("分数权重解析失败");
+        }
     }
 
     /**

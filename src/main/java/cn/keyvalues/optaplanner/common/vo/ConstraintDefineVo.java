@@ -45,6 +45,7 @@ public class ConstraintDefineVo {
          */
         List<Expression> expressionList;
 
+        @Schema(description = "单选: [HARD、MEDIUM、SOFT]")
         String scoreLevel;
 
         @Schema(description = "逻辑表达式")
