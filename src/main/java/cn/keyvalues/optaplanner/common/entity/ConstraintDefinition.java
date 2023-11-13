@@ -30,7 +30,7 @@ public class ConstraintDefinition implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
 
     @TableField(typeHandler = ConstraintDefinitionHandler.class)
     private ConstraintDefineVo constraintDefinition;

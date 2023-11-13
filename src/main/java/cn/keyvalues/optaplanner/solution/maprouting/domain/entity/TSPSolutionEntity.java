@@ -17,7 +17,7 @@ import lombok.Data;
 @TableName(value = "visitor_routing_solution",autoResultMap = true)
 public class TSPSolutionEntity {
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
 
     private String problemName;
 
