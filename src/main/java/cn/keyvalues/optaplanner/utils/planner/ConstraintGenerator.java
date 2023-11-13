@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -127,6 +128,9 @@ public class ConstraintGenerator {
         }
         Expression expression = expressionList.get(0);
         String exp = expression.getExpression();
+        if(!StringUtils.hasLength(exp)){
+            return 1;
+        }
         Object expValue;
         try {
             expValue = getExpValue(t, exp);
