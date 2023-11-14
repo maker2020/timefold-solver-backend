@@ -76,7 +76,7 @@ public class ConstraintGenerator {
         curStream=stream==null?curStream:stream;
         ConstraintBuilder builder=switch(opMethod.getMethod()){
             case penalize->((UniConstraintStream<?>)curStream).penalize(scoreType(parameter),t->weightFunction(t, parameter));
-            case reward->((UniConstraintStream<?>)curStream).penalize(scoreType(parameter),t->weightFunction(t, parameter));
+            case reward->((UniConstraintStream<?>)curStream).reward(scoreType(parameter),t->weightFunction(t, parameter));
             default->null;
         };
         curBuilder=builder==null?curBuilder:builder;
@@ -263,7 +263,7 @@ public class ConstraintGenerator {
 
 // for case: (a.c+a.b)+10
 /**
- * 不支持计算中含有浮点数。
+ * 不支持计算中含有浮点数、不支持&&，||等逻辑运算。（需要扩展该方法）
  */
 class ExpCalculator{
 
@@ -278,6 +278,24 @@ class ExpCalculator{
         operatorLevel.put("/", 1);
         operatorLevel.put("(", 99);
         operatorLevel.put(")", -99);
+    }
+
+    // extra: a.c && a.b
+    public boolean logicalCalculate(String s,Object target) throws Exception{
+        String[] numberOperators = new String[]{"\\+", "-", "\\*", "/"};
+        String regex = String.join("|", numberOperators);
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(s);
+        if (matcher.find()) {
+            throw new IllegalStateException("不合法的逻辑运算");
+        } else {
+            
+        }
+        return false;
+    }
+
+    public static void main(String[] args) throws Exception{
+        new ExpCalculator().logicalCalculate("hello", null);
     }
 
     // for case: (a.c+a.b)+10
