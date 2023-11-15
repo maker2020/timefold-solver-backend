@@ -229,8 +229,8 @@ public class ConstraintGenerator {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(exp);
         if (matcher.matches()) {
-            ExpCalculator calculator=new ExpCalculator();
-            return calculator.numberCalculate(exp, target);
+            ExpressCalculator calculator=new ExpressCalculator();
+            return calculator.calculateExp(target, exp);
         }else{
             return getPropertyValue(target, exp);
             // throw new UnsupportedOperationException();
@@ -247,95 +247,178 @@ public class ConstraintGenerator {
             Field field = clazz.getDeclaredField(property);
             field.setAccessible(true);
             obj=field.get(obj);
+            field.setAccessible(false);
         }
         return obj;
     }
 
-    // private long penalize(Object target,Parameter parameter){
-    //     return 0;
-    // }
-
-    // private long reward(Object target,Parameter parameter){
-    //     return 0;
-    // }
-
 }
 
-// for case: (a.c+a.b)+10
+
 /**
- * 不支持计算中含有浮点数、不支持&&，||等逻辑运算。（需要扩展该方法）
+ * 支持成员运算，数字运算，逻辑运算，及某个类型的运算的复合运算。
  */
-class ExpCalculator{
+class ExpressCalculator {
 
-    Stack<String> stack=new Stack<>();
-    Map<String,Integer> operatorLevel=new HashMap<>();
-    Stack<String> calculateStack=new Stack<>();
+    static final String split_operator_regex;
+    
+    static final Map<String,Integer> operatorLevel=new HashMap<>();
 
-    public ExpCalculator(){
+    static{
         operatorLevel.put("+", 0);
         operatorLevel.put("-", 0);
         operatorLevel.put("*", 1);
         operatorLevel.put("/", 1);
+        operatorLevel.put("&&", 10);
+        operatorLevel.put("||", 10);
         operatorLevel.put("(", 99);
         operatorLevel.put(")", -99);
+
+        String[] ops=new String[]{"+","-","*","/","(",")","&&","||"};
+        split_operator_regex = String.join("|", Arrays.stream(ops)
+                .map(Pattern::quote) // 对特殊字符进行转义
+                .toArray(String[]::new));
     }
 
-    // extra: a.c && a.b
-    public boolean logicalCalculate(String s,Object target) throws Exception{
-        String[] numberOperators = new String[]{"\\+", "-", "\\*", "/"};
-        String regex = String.join("|", numberOperators);
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(s);
-        if (matcher.find()) {
-            throw new IllegalStateException("不合法的逻辑运算");
-        } else {
-            
+    Stack<String> operatorStack=new Stack<>();
+    Stack<String> calculateStack=new Stack<>();
+
+    /**
+     * human.money+9999>100000 or human.isHandsome && human.isRich
+     * @param target 操作对象 (human or ... or null)
+     * @param exp 成员运算、数字运算、逻辑运算表达式
+     * @return
+     */
+    public Object calculateExp(Object target,String exp) throws Exception{
+        // 将表达式中成员运算解析为对象实际存储值，并得到新表达式
+        String newExp = parsePropertyValue(exp, target);
+        return calculate(toSuffix(newExp));
+    }
+
+    /**
+     * 转后缀式
+     * @param expression for example: 2*2.5+(3-1)、true && (false || true)
+     * @return
+     */
+    public List<String> toSuffix(String expression){
+        List<String> suffixList=new ArrayList<>();
+        List<String> elements = new ArrayList<>();
+        Pattern pattern = Pattern.compile("\\d+(\\.\\d+)?|true|false|&&|\\|\\||[+\\-*/()]");
+        Matcher matcher = pattern.matcher(expression);
+        while (matcher.find()) {
+            elements.add(matcher.group().trim());
         }
-        return false;
-    }
-
-    public static void main(String[] args) throws Exception{
-        new ExpCalculator().logicalCalculate("hello", null);
-    }
-
-    // for case: (a.c+a.b)+10
-    public double numberCalculate(String s,Object target) throws Exception{
-        s=parsePropertyValue(s,target);
-        String suffixStr = toSuffix(s.trim());
-        double right=0,left=0;
-        String[] arrS = suffixStr.split(" ");
-        for (int i = 0; i < arrS.length; i++) {
-            String t = arrS[i];
-            if ("".equals(t))
+        // 生成后缀式
+        for(int i=0;i<elements.size();i++){
+            String element=elements.get(i);
+            if(isNumber(element) || isLogicValue(element)){
+                suffixList.add(element);
                 continue;
-            if (NumberUtils.isCreatable(t)) {
-                calculateStack.push(t);
-            } else {
-                if(!calculateStack.empty()) {
-                    right = Double.parseDouble(calculateStack.pop());
+            }
+            // 负号还是减号转义特殊处理
+            if(element.equals("-") && i!=0 
+                    && elements.get(i-1).equals("(")){
+                suffixList.add("0");
+            }
+            if(element.equals(")")){
+                while (!operatorStack.empty()) {
+                    if(!operatorStack.peek().equals("(")){
+                        suffixList.add(operatorStack.pop());
+                    }else{
+                        operatorStack.pop();
+                        break;
+                    }
                 }
-                if(!calculateStack.empty()){
-                    left = Double.parseDouble(calculateStack.pop());
-                }else{
-                    left = 0;
+            }else{
+                // 优先级小于等于栈顶需要出栈直至大于于
+                while (!operatorStack.empty()) {
+                    String operator= operatorStack.peek();
+                    // (特殊处理 ：只接受)才弹出
+                    if(operator.equals("(")&&!element.equals(")")) {
+                        break;
+                    }
+                    // 大于栈顶
+                    if (operatorLevel.get(element) > operatorLevel.get(operator)) {
+                        break;
+                    }
+                    suffixList.add(operatorStack.pop());
                 }
-                switch (t) {
-                    case "+"->calculateStack.push((left+right)+"");
-                    case "-"->calculateStack.push((left-right)+"");
-                    case "*"->calculateStack.push((left*right)+"");
-                    case "/"->calculateStack.push((left/right)+"");
-                    default->throw new IllegalArgumentException();
-                }
+                operatorStack.push(element);
             }
         }
-        if (calculateStack.size() == 1)
-            right = Double.parseDouble(calculateStack.pop());
-        return right;
+        // 全部出栈
+        while (!operatorStack.empty()) {
+            suffixList.add(operatorStack.pop());
+        }
+        return suffixList;
     }
 
-    // 多个则target改为map
+    /**
+     * 计算后缀式
+     * @return boolean or number
+     */
+    public Object calculate(List<String> suffixList){
+        if(suffixList.contains("&&")||suffixList.contains("||")){ // 逻辑运算
+            Boolean right=false,left=false;
+            for(String element:suffixList){
+                if(isLogicValue(element)){
+                    calculateStack.push(element);
+                }else{
+                    if(!calculateStack.empty()){
+                        right=Boolean.parseBoolean(calculateStack.pop());
+                    }
+                    if(!calculateStack.empty()){
+                        left=Boolean.parseBoolean(calculateStack.pop());
+                    }
+                    switch(element){
+                        case "&&"->calculateStack.push(Boolean.toString(left&&right));
+                        case "||"->calculateStack.push(Boolean.toString(left||right));
+                    }
+                }
+            }
+            if(calculateStack.size()==1){
+                right=Boolean.parseBoolean(calculateStack.pop());
+            }
+            return right;
+        }else{
+            double right=0,left=0;
+            for(String element:suffixList){
+                if(isNumber(element)){
+                    calculateStack.push(element);
+                }else{
+                    if(!calculateStack.empty()) {
+                        right = Double.parseDouble(calculateStack.pop());
+                    }
+                    if(!calculateStack.empty()){
+                        left = Double.parseDouble(calculateStack.pop());
+                    }else{
+                        left = 0;
+                    }
+                    switch (element) {
+                        case "+"->calculateStack.push((left+right)+"");
+                        case "-"->calculateStack.push((left-right)+"");
+                        case "*"->calculateStack.push((left*right)+"");
+                        case "/"->calculateStack.push((left/right)+"");
+                        default->throw new IllegalArgumentException();
+                    }
+                }
+            }
+            if(calculateStack.size()==1){
+                right=Double.parseDouble(calculateStack.pop());
+            }
+            return right;
+        }
+    }
+
+    /**
+     * 从表达式s解析出target对应属性值，并替换到原始字符串中去。
+     * @param s
+     * @param target
+     * @return
+     * @throws Exception
+     */
     private String parsePropertyValue(String s,Object target) throws Exception{
-        String[] ops=new String[]{"+","-","*","/","(",")"};
+        String[] ops=new String[]{"+","-","*","/","(",")","&&","||"};
         String regex = String.join("|", Arrays.stream(ops)
                 .map(Pattern::quote) // 对特殊字符进行转义
                 .toArray(String[]::new));
@@ -349,61 +432,32 @@ class ExpCalculator{
         return s;
     }
 
-    private String toSuffix(String s) {
-         for(int i=0;i<s.length();i++){
-            try {
-                if("-".equals(s.charAt(i)+"") && "(".equals(s.charAt(i-1)+"")){
-                    s=s.substring(0, i)+"0"+s.substring(i, s.length());
-                }
-            } catch (Exception e) {
-                s="0"+s;
-            }
+    // private Object getPropertyValue(Object target,String propertyExp) throws Exception{
+    //     Class<?> clazz = target.getClass();
+    //     String[] expProperties = propertyExp.split("\\.");
+    //     Object obj=target;
+    //     for (int i=0;i<expProperties.length;i++) {
+    //         if(i==0) continue;
+    //         String property=expProperties[i];
+    //         Field field = clazz.getDeclaredField(property);
+    //         field.setAccessible(true);
+    //         obj=field.get(obj);
+    //         field.setAccessible(false);
+    //     }
+    //     return obj;
+    // }
+
+    private boolean isNumber(String str){
+        try{
+            Double.parseDouble(str);
+            return true;
+        }catch(Exception e){
+            return false;
         }
-        StringBuilder resBuilder = new StringBuilder();
-        StringBuilder numberBuilder = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c >= 48 && c < 58) {
-                numberBuilder.append(c);
-                if (i != s.length() - 1)
-                    continue;
-            }
-            resBuilder.append(" " + numberBuilder.toString());
-            numberBuilder.setLength(0);
-            String cStr = c + "";
-            if (operatorLevel.get(cStr) == null)
-                continue;
-            int level = operatorLevel.get(cStr);
-            // )特殊处理
-            if(level==-99){
-                while (!stack.empty()) {
-                    if(operatorLevel.get(stack.peek())!=99){
-                        resBuilder.append(" "+stack.pop());
-                    }else{
-                        stack.pop();
-                        break;
-                    }
-                }
-            }else{
-                // 优先级小于等于栈顶需要出栈直至大于于
-                while (!stack.empty()) {
-                    int topLevel = operatorLevel.get(stack.peek());
-                    // (特殊处理 ：只接受)才弹出
-                    if(topLevel==99&&level!=-99) break;
-                    // 大于栈顶
-                    if (level > topLevel) {
-                        break;
-                    }
-                    resBuilder.append(" " + stack.pop());
-                }
-                stack.push(cStr);
-            }
-        }
-        // 全部出栈
-        while (!stack.empty()) {
-            resBuilder.append(" " + stack.pop());
-        }
-        return resBuilder.substring(1);
+    }
+
+    private boolean isLogicValue(String str){
+        return "true".equals(str)||"false".equals(str);
     }
 
 }
