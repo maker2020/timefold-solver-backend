@@ -3,6 +3,20 @@ server:
     servlet:
         context-path: /planner
 
+spring:
+  data:
+    redis:
+      database: 2
+      host: 172.16.28.90
+      port: 6379
+      password: ''
+  datasource:
+      url: jdbc:postgresql://172.16.21.161:5432/optaplanner?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+      username: postgres
+      password: postgres
+      driver-class-name: cn.keyvalues.optaplanner.postgis.DriverWrapper
+
+
 mybatis-plus:
   mapper-locations:
   - classpath*:cn/keyvalues/optaplanner/**/mapper/xml/*Mapper.xml
@@ -22,3 +36,8 @@ mybatis-plus:
 # 全限定名区分schema
 springdoc:
   use-fqn: true
+
+baidu-map:
+# 百度地图key
+  # key: 2AlydPgxsMYMoGBaKv3WDiOItH70Xcvt
+  key: 7mfQS6qqVBGkNbkmPl3GBcTTApfOu4Zu
