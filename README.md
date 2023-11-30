@@ -19,6 +19,10 @@ Capacity Facility Location Problem: 有容量的设施位置问题。
 
 在不确认的业务背景下，某端的数量是不确定的。因此，程序根据输入的服务站数量m、客户数量n，得出最大关系数量m*n。产生mn条关系对象，求解过程主要通过设置约束来影响求解器分配倾向。
 
+真正的规划变量(Genuine Planning Var)：客户、服务站、分配量
+
+[影子变量](https://timefold.ai/docs/timefold-solver/latest/configuration/configuration#shadowVariable)：客户、服务站、分配关系这三个均有自己的自定义影子变量。
+
 ## 2. TSP问题
 
 ### TSP-功能描述
@@ -38,6 +42,10 @@ travelling seller problem: 旅行商问题
 2. 得出组合列表C(2,5)，为每种组合中的两点调用路径规划api（选最短路径或其他可选的规划策略）。
 3. 开始求解。
 
+真正的规划变量(Genuine Planning Var)：访问者中的客户List。
+
+[链式影子变量](https://timefold.ai/docs/timefold-solver/latest/configuration/configuration#chainedPlanningVariable)：客户中记录访问前后客户的链式结构的变量。
+
 ## 管理模块
 
 主要实现以下功能：
@@ -45,6 +53,54 @@ travelling seller problem: 旅行商问题
 1. 用户求解每个问题是后台异步单独进行的，每个求解都可以实时轮询获取结果，以及每个结果都实时同步到数据库，有单独页面可以管理问题的增删改查，重新计算。
 
 2. 可以实时计算（变更参数、问题事实输入后重新计算——区分为冷/热启动）。
+
+## Solver配置及算法说明
+
+求解器内置了几个通用智能优化算法（模拟退火SA、禁忌搜索、）解决了几乎大多数场景。因此，通常只需要在resources以构建启发式+局部搜索（包含以上所说的智能优化算法）来配置Solver，就能满足基本需求。
+
+> 备注：不能忽略顺序问题。
+
+```XML
+<solver>
+    ......
+
+    <!-- 构建启发式 -->
+    <constructionHeuristic>
+    </constructionHeuristic>
+    <!-- 局部搜索 -->
+    <localSearch></localSearch>
+
+    ......
+</solver>
+```
+
+此外，可以通过官网的benchmark（基准测试）方案来进一步确立更好的算法及算法配置结构。
+
+## 求解器相关说明
+
+> 只写本demo案例用到的关注点。其余详细看官网文档。
+
+### 规划变量
+
+1. ```@PlanningVariable```和```@PlanningListVariable```。
+
+    a. 前者不支持标记到List上，后者可以。
+
+    b. ```@PlanningListVar```标记List为规划变量，求解器可能对列表进行切割、排列组合等，但不管怎样给出的不同实体的规划List不会重复。
+
+    c. ```@PlanningVariable```标记单个对象为规划变量。求解器可能对其排列组合等。不同实体的规划变量彼此会重复，需要自己来控制（用约束）。
+
+2. ```@PlanningId```，通常标记实际的ID属性，后端自己根据前端问题，赋上ID。如果被求解器使用于规划的变量没有ID是不被允许的。
+
+### 影子变量
+
+1. 触发顺序(Trigger Order)要了解清楚。否则如果这些变量参与分数计算，则会导致分数偏差。
+
+2. 含影子变量的类必须标记为PlanningEntity。（任何规划实体PlanningEntity都要写到Solver配置中去）
+
+### Solver配置
+
+1. ```<Forager>```标签可以控制结果，例如数量或其他限制等。例如：如果页面需要展示更多差的解决方案，可以调整。
 
 ## Git仓库地址
 
